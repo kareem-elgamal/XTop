@@ -91,6 +91,6 @@ Found a bug or want a feature? Open an
 
 <div align="center">
 
-Made by [Karim Sayed](https://github.com/kareem-elgamal)
+Made by [Karim Khaled](https://github.com/kareem-elgamal)
 
 </div>
