@@ -57,10 +57,77 @@ XTop مش بيفتح نافذة خاصة بيه — بيروح لـ **شريط �
 
 كمّل من **[البداية ←](https://xtop-app.pages.dev/ar/guide/getting-started)**
 
+## جولة سريعة
+
+<table>
+<tr>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/ar/services/panel">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/panel-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/panel-ar-light.png" width="380" alt="اللوحة — المشاريع والمجموعات والبحث">
+</picture>
+</a><br>
+<sub><b>اللوحة — المشاريع والمجموعات والبحث</b></sub>
+</td>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/ar/services/commands-terminal">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/terminal-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/terminal-ar-light.png" width="380" alt="الترمنال — تبويبات وshells واقتراحات">
+</picture>
+</a><br>
+<sub><b>الترمنال — تبويبات وshells واقتراحات</b></sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/ar/services/api">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/api-response-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/api-response-ar-light.png" width="380" alt="اختبار الـ API — الـ base URL بتاع مشروعك">
+</picture>
+</a><br>
+<sub><b>اختبار الـ API — الـ base URL بتاع مشروعك</b></sub>
+</td>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/ar/services/meetings">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/meetings-transcript-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/meetings-transcript-ar-light.png" width="380" alt="الاجتماعات — التفريغ والملخص">
+</picture>
+</a><br>
+<sub><b>الاجتماعات — التفريغ والملخص</b></sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/ar/services/notes">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/notes-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/notes-ar-light.png" width="380" alt="الملاحظات — ملفات Markdown على الهارد">
+</picture>
+</a><br>
+<sub><b>الملاحظات — ملفات Markdown على الهارد</b></sub>
+</td>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/ar/services/islamic">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/athkar-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/athkar-ar-light.png" width="380" alt="مواقيت الصلاة والأذكار">
+</picture>
+</a><br>
+<sub><b>مواقيت الصلاة والأذكار</b></sub>
+</td>
+</tr>
+</table>
+
 ## اللي جواه
 
 | | |
 | --- | --- |
+| **[الجزيرة](https://xtop-app.pages.dev/ar/services/island)** | كبسولة متعلّقة في حرف الشاشة. قرّب منها تطلع الأربع خدمات، اضغط عليها تفتح مشاريعك، ارمي عليها ملفات، أو اسحب X على أي نافذة. |
+| **[X Agent](https://xtop-app.pages.dev/ar/services/x-agent)** | اسأل عن مشروعك أو عن أي نافذة. بيشغّل أداة الـ AI اللي عندك — Claude أو ChatGPT أو Gemini أو OpenCode — باشتراكك، من غير أي مفتاح API. |
 | **[مشاريعك بأي اسم](https://xtop-app.pages.dev/ar/services/panel)** | مجموعات وأسماء بديلة وبحث مرن. `Enter` بيفتح المحرر، و `Shift+Enter` بيفتح ترمنال — في ويندوز أو في WSL حسب المشروع. |
 | **[أوامر سريعة في ترمنال حقيقي](https://xtop-app.pages.dev/ar/services/commands-terminal)** | أوامر لكل مشروع ولكل مجموعة وأوامر عامة، بتشتغل في جلسة pty بتبويبات محتفظة بالمخرجات. |
 | **[اختبار API عارف مشروعك](https://xtop-app.pages.dev/ar/services/api)** | الـ base URL بييجي من `.env` بتاع المشروع نفسه، والطلبات المحفوظة بتتخزن جوه المشروع، و `Ctrl+Shift+A` بيفتح تبويب سريع من الكليب بورد. |

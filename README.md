@@ -58,10 +58,77 @@ already focused.
 
 Carry on with **[Getting started →](https://xtop-app.pages.dev/guide/getting-started)**
 
+## A quick tour
+
+<table>
+<tr>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/services/panel">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/panel-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/panel-en-light.png" width="380" alt="The panel — projects, collections, search">
+</picture>
+</a><br>
+<sub><b>The panel — projects, collections, search</b></sub>
+</td>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/services/commands-terminal">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/terminal-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/terminal-en-light.png" width="380" alt="The terminal — tabs, shells, suggestions">
+</picture>
+</a><br>
+<sub><b>The terminal — tabs, shells, suggestions</b></sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/services/api">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/api-response-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/api-response-en-light.png" width="380" alt="The API tester — your project's own base URL">
+</picture>
+</a><br>
+<sub><b>The API tester — your project's own base URL</b></sub>
+</td>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/services/meetings">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/meetings-transcript-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/meetings-transcript-en-light.png" width="380" alt="Meetings — transcript and summary">
+</picture>
+</a><br>
+<sub><b>Meetings — transcript and summary</b></sub>
+</td>
+</tr>
+<tr>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/services/notes">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/notes-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/notes-en-light.png" width="380" alt="Notes — Markdown files on disk">
+</picture>
+</a><br>
+<sub><b>Notes — Markdown files on disk</b></sub>
+</td>
+<td align="center" width="50%">
+<a href="https://xtop-app.pages.dev/services/islamic">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/athkar-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/athkar-en-light.png" width="380" alt="Prayer times and أذكار">
+</picture>
+</a><br>
+<sub><b>Prayer times and أذكار</b></sub>
+</td>
+</tr>
+</table>
+
 ## What is inside
 
 | | |
 | --- | --- |
+| **[The island](https://xtop-app.pages.dev/services/island)** | A capsule pinned to the edge of your screen. Point at it for the four services, click it for your projects, drop files on it, or drag X onto any window. |
+| **[X Agent](https://xtop-app.pages.dev/services/x-agent)** | Ask about your project or any window. It runs the AI tool you already have — Claude, ChatGPT, Gemini or OpenCode — on your own subscription, with no API key. |
 | **[Projects, found by any name](https://xtop-app.pages.dev/services/panel)** | Collections, aliases and fuzzy search. `Enter` opens the IDE, `Shift+Enter` opens a terminal — in Windows or in WSL, whichever the project uses. |
 | **[Quick commands in a real terminal](https://xtop-app.pages.dev/services/commands-terminal)** | Per-project, per-collection and global commands, run in a tabbed pty session that keeps its scrollback. |
 | **[An API tester that knows your project](https://xtop-app.pages.dev/services/api)** | The base URL comes from the project's own `.env`, saved requests live in the repo, and `Ctrl+Shift+A` opens a scratch tab from your clipboard. |
