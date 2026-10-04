@@ -17,13 +17,9 @@
 
 [English](README.md) · [الوثائق](https://xtop-app.pages.dev/ar/) · [التحميل](https://github.com/kareem-elgamal/XTop/releases/latest)
 
-<img src="https://xtop-app.pages.dev/island-open.png" width="720" alt="جزيرة XTop مفتوحة: الملاحظات واختبار الـ API والترمنال والاجتماعات والتسجيل والوضع الإسلامي والتذكيرات وغيرهم.">
-
-<img src="https://xtop-app.pages.dev/island-idle.png" width="560" alt="جزيرة XTop وهي ساكنة، متعلّقة في حرف الشاشة من فوق.">
-
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/island-expanded-ar-dark.png">
-  <img src="https://xtop-app.pages.dev/shots/island-expanded-ar-light.png" width="560" alt="جزيرة XTop مفتوحة: الاختصارات السريعة وآخر مشاريعك.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/island-desktop-ar-dark.gif">
+  <img src="https://xtop-app.pages.dev/island-desktop-ar-light.gif" width="720" alt="جزيرة XTop على سطح المكتب: قرّب منها، افتحها، ودوّر على مشاريعك.">
 </picture>
 
 <picture>
