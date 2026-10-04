@@ -4,11 +4,12 @@
 
 # XTop
 
-**One orb, your whole workspace.**
+**One island, your whole workspace.**
 
 A floating launcher for developers — search your projects, open them in the
 right IDE and the right shell, and keep notes, requests, git, meetings and
-reminders one keystroke away.
+reminders one keystroke away. Ask X, the built-in assistant, about any window —
+it uses the AI tool you already have, with no API key.
 
 [![Download](https://img.shields.io/github/v/release/kareem-elgamal/XTop?style=for-the-badge&color=0b6fc4&label=download)](https://github.com/kareem-elgamal/XTop/releases/latest)
 [![Documentation](https://img.shields.io/badge/docs-xtop--app.pages.dev-6b3fb0?style=for-the-badge)](https://xtop-app.pages.dev)
@@ -17,8 +18,13 @@ reminders one keystroke away.
 [العربية](README.ar.md) · [Documentation](https://xtop-app.pages.dev) · [Download](https://github.com/kareem-elgamal/XTop/releases/latest)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/panel-en-dark.png">
-  <img src="https://xtop-app.pages.dev/shots/panel-en-light.png" width="620" alt="The XTop panel: collections, projects and the service icons.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/island-expanded-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/island-expanded-en-light.png" width="560" alt="The XTop island, opened: quick actions and your recent projects.">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/island-chat-en-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/island-chat-en-light.png" width="560" alt="X, the built-in assistant, answering in the island with the files it changed.">
 </picture>
 
 </div>
@@ -41,13 +47,13 @@ first.
 
 XTop is a **Windows** application. It opens your IDE, drives Windows Terminal
 and WSL, and needs a Windows desktop session for the tray icon and the
-always-on-top orb.
+island.
 
 ## After it starts
 
 XTop does not open a window of its own — it goes to the **tray**, and puts a
-small floating orb on your desktop. Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd>,
-click the orb, or click the tray icon to open the panel — with the search box
+small capsule — the island — on the edge of your screen. Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd>,
+click the island, or click the tray icon to open the panel — with the search box
 already focused.
 
 Carry on with **[Getting started →](https://xtop-app.pages.dev/guide/getting-started)**
@@ -91,6 +97,6 @@ Found a bug or want a feature? Open an
 
 <div align="center">
 
-Made by [Karim Khaled](https://github.com/kareem-elgamal)
+Made by [Karim Sayed](https://github.com/kareem-elgamal)
 
 </div>

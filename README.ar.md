@@ -4,10 +4,12 @@
 
 # XTop
 
-**زرار واحد… ومساحة شغلك كلها.**
+**جزيرة واحدة… ومساحة شغلك كلها.**
 
 لوحة عائمة للمطوّرين — دوّر على مشاريعك، افتحها في المحرر الصح والترمنال الصح،
 وخلّي الملاحظات والـ API والـ git والاجتماعات والتذكيرات على بُعد ضغطة زرار.
+واسأل X، المساعد اللي جوه البرنامج، عن أي نافذة — بيشتغل بأداة الـ AI اللي عندك
+أصلًا، من غير أي مفتاح API.
 
 [![تحميل](https://img.shields.io/github/v/release/kareem-elgamal/XTop?style=for-the-badge&color=0b6fc4&label=%D8%AA%D8%AD%D9%85%D9%8A%D9%84)](https://github.com/kareem-elgamal/XTop/releases/latest)
 [![الوثائق](https://img.shields.io/badge/docs-xtop--app.pages.dev-6b3fb0?style=for-the-badge)](https://xtop-app.pages.dev/ar/)
@@ -16,8 +18,13 @@
 [English](README.md) · [الوثائق](https://xtop-app.pages.dev/ar/) · [التحميل](https://github.com/kareem-elgamal/XTop/releases/latest)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/panel-ar-dark.png">
-  <img src="https://xtop-app.pages.dev/shots/panel-ar-light.png" width="620" alt="لوحة XTop: المجموعات والمشاريع وأيقونات الخدمات.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/island-expanded-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/island-expanded-ar-light.png" width="560" alt="جزيرة XTop مفتوحة: الاختصارات السريعة وآخر مشاريعك.">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/island-chat-ar-dark.png">
+  <img src="https://xtop-app.pages.dev/shots/island-chat-ar-light.png" width="560" alt="X، المساعد اللي جوه البرنامج، بيرد في الجزيرة ومعاه الملفات اللي اتغيّرت.">
 </picture>
 
 </div>
@@ -40,13 +47,13 @@
 > اختار **More info → Run anyway**.
 
 XTop برنامج **ويندوز**. بيفتح المحرر بتاعك، وبيشغّل Windows Terminal و WSL،
-ومحتاج جلسة سطح مكتب ويندوز عشان أيقونة شريط المهام والزر العائم.
+ومحتاج جلسة سطح مكتب ويندوز عشان أيقونة شريط المهام والجزيرة.
 
 ## بعد ما يشتغل
 
-XTop مش بيفتح نافذة خاصة بيه — بيروح لـ **شريط المهام**، وبيحط زر عائم صغير على
-سطح المكتب. اضغط <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd>، أو اضغط الزر
-العائم، أو أيقونة شريط المهام، عشان تفتح اللوحة — وخانة البحث بتكون جاهزة على طول.
+XTop مش بيفتح نافذة خاصة بيه — بيروح لـ **شريط المهام**، وبيحط كبسولة صغيرة — الجزيرة — على
+حرف الشاشة. اضغط <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd>، أو اضغط على
+الجزيرة، أو أيقونة شريط المهام، عشان تفتح اللوحة — وخانة البحث بتكون جاهزة على طول.
 
 كمّل من **[البداية ←](https://xtop-app.pages.dev/ar/guide/getting-started)**
 
