@@ -18,8 +18,8 @@ it uses the AI tool you already have, with no API key.
 [العربية](README.ar.md) · [Documentation](https://xtop-app.pages.dev) · [Download](https://github.com/kareem-elgamal/XTop/releases/latest)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/island-desktop-en-dark.gif?v=2">
-  <img src="https://xtop-app.pages.dev/island-desktop-en-light.gif?v=2" width="720" alt="The XTop island on the desktop: point at it, open it, and search your projects.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/island-desktop-en-dark.gif?v=3">
+  <img src="https://xtop-app.pages.dev/island-desktop-en-light.gif?v=3" width="720" alt="The XTop island on a Windows desktop: drag X onto VS Code, a web page or Figma, and ask about it or link it to a project.">
 </picture>
 
 <picture>

@@ -18,8 +18,8 @@
 [English](README.md) · [الوثائق](https://xtop-app.pages.dev/ar/) · [التحميل](https://github.com/kareem-elgamal/XTop/releases/latest)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/island-desktop-ar-dark.gif?v=2">
-  <img src="https://xtop-app.pages.dev/island-desktop-ar-light.gif?v=2" width="720" alt="جزيرة XTop على سطح المكتب: قرّب منها، افتحها، ودوّر على مشاريعك.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/island-desktop-ar-dark.gif?v=3">
+  <img src="https://xtop-app.pages.dev/island-desktop-ar-light.gif?v=3" width="720" alt="جزيرة XTop على سطح مكتب ويندوز: اسحب X على VS Code أو صفحة ويب أو Figma، واسأل عنها أو اربطها بمشروع.">
 </picture>
 
 <picture>
