@@ -17,10 +17,7 @@ it uses the AI tool you already have, with no API key.
 
 [العربية](README.ar.md) · [Documentation](https://xtop-app.pages.dev) · [Download](https://github.com/kareem-elgamal/XTop/releases/latest)
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/island-demo-en-dark.gif?v=1">
-  <img src="https://xtop-app.pages.dev/island-demo-en-light.gif?v=1" width="720" alt="The XTop island on a Windows desktop: drag X onto VS Code, a web page or Figma, and ask about it or link it to a project.">
-</picture>
+
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/island-chat-en-dark.png">
@@ -132,7 +129,10 @@ Carry on with **[Getting started →](https://xtop-app.pages.dev/guide/getting-s
 | **[Startup projects](https://xtop-app.pages.dev/services/startup)** | Projects that open themselves, in the IDE or a terminal, when the app launches. |
 
 Arabic and English throughout, English by default, RTL when Arabic is on.
-
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/island-demo-en-dark.gif?v=1">
+  <img src="https://xtop-app.pages.dev/island-demo-en-light.gif?v=1" width="720" alt="The XTop island on a Windows desktop: drag X onto VS Code, a web page or Figma, and ask about it or link it to a project.">
+</picture>
 ## Documentation
 
 Everything lives on **[xtop-app.pages.dev](https://xtop-app.pages.dev)**, in
