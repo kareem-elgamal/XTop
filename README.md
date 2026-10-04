@@ -17,6 +17,10 @@ it uses the AI tool you already have, with no API key.
 
 [العربية](README.ar.md) · [Documentation](https://xtop-app.pages.dev) · [Download](https://github.com/kareem-elgamal/XTop/releases/latest)
 
+<img src="https://xtop-app.pages.dev/island-open.png" width="720" alt="The XTop island, opened: notes, API tester, terminal, meetings, record, Islamic mode, reminders and more.">
+
+<img src="https://xtop-app.pages.dev/island-idle.png" width="560" alt="The XTop island at rest, pinned to the top edge of the screen.">
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/island-expanded-en-dark.png">
   <img src="https://xtop-app.pages.dev/shots/island-expanded-en-light.png" width="560" alt="The XTop island, opened: quick actions and your recent projects.">
