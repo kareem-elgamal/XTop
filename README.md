@@ -102,7 +102,7 @@ Carry on with **[Getting started →](https://xtop-app.pages.dev/guide/getting-s
 </td>
 </tr>
 <tr>
-<td align="center" width="50%">
+<td align="center" colspan="2">
 <a href="https://xtop-app.pages.dev/services/notes">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/notes-en-dark.png">
@@ -110,15 +110,6 @@ Carry on with **[Getting started →](https://xtop-app.pages.dev/guide/getting-s
 </picture>
 </a><br>
 <sub><b>Notes — Markdown files on disk</b></sub>
-</td>
-<td align="center" width="50%">
-<a href="https://xtop-app.pages.dev/services/islamic">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/athkar-en-dark.png">
-  <img src="https://xtop-app.pages.dev/shots/athkar-en-light.png" width="380" alt="Prayer times and أذكار">
-</picture>
-</a><br>
-<sub><b>Prayer times and أذكار</b></sub>
 </td>
 </tr>
 </table>

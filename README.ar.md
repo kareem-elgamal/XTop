@@ -101,7 +101,7 @@ XTop مش بيفتح نافذة خاصة بيه — بيروح لـ **شريط �
 </td>
 </tr>
 <tr>
-<td align="center" width="50%">
+<td align="center" colspan="2">
 <a href="https://xtop-app.pages.dev/ar/services/notes">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/notes-ar-dark.png">
@@ -109,15 +109,6 @@ XTop مش بيفتح نافذة خاصة بيه — بيروح لـ **شريط �
 </picture>
 </a><br>
 <sub><b>الملاحظات — ملفات Markdown على الهارد</b></sub>
-</td>
-<td align="center" width="50%">
-<a href="https://xtop-app.pages.dev/ar/services/islamic">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://xtop-app.pages.dev/shots/athkar-ar-dark.png">
-  <img src="https://xtop-app.pages.dev/shots/athkar-ar-light.png" width="380" alt="مواقيت الصلاة والأذكار">
-</picture>
-</a><br>
-<sub><b>مواقيت الصلاة والأذكار</b></sub>
 </td>
 </tr>
 </table>
