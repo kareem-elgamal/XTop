@@ -22,8 +22,7 @@
 html { background: var(--bg); }
 body { background: var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); }
 #page { position: relative; overflow: hidden; }
-#thread { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 0; }
-#thread path { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+#thread3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: 0; }
 .layer { position: relative; z-index: 1; }
 .wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .label { font: 400 .72rem/1.4 var(--f-body); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); margin: 0; }
@@ -65,7 +64,7 @@ footer .meta { margin-top: 1.4rem; font-size: .72rem; letter-spacing: .3em; colo
 <body>
 
 <div id="page">
-  <svg id="thread" aria-hidden="true"><path id="p1"></path><path id="p2"></path></svg>
+  <canvas id="thread3d" aria-hidden="true"></canvas>
 
   <div class="layer">
     <header class="hero wrap">
@@ -117,6 +116,7 @@ footer .meta { margin-top: 1.4rem; font-size: .72rem; letter-spacing: .3em; colo
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 /* ===== EDIT YOUR DETAILS HERE ===== */
@@ -167,69 +167,146 @@ $("#rsvp").addEventListener("submit", (e) => {
   requestAnimationFrame(build);
 });
 
-/* ===== the thread ===== */
+/* ===== the thread (Three.js yarn) ===== */
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const page = $("#page"), svg = $("#thread"), p1 = $("#p1"), p2 = $("#p2");
+const page = $("#page");
 const S = { intro: 0, len: 0 };
-let L1 = 0, L2 = 0, samples = [];
+let gl = null;
+try { gl = buildGL(); } catch (err) { gl = null; }
 
-function smooth(pts) {
-  let d = `M${pts[0][0]} ${pts[0][1]}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i - 1] || pts[i], a = pts[i], b = pts[i + 1], p3 = pts[i + 2] || b;
-    d += ` C${a[0] + (b[0] - p0[0]) / 6} ${a[1] + (b[1] - p0[1]) / 6} ${b[0] - (p3[0] - a[0]) / 6} ${b[1] - (p3[1] - a[1]) / 6} ${b[0]} ${b[1]}`;
+function yarnTexture() {
+  const c = document.createElement("canvas"); c.width = 64; c.height = 64;
+  const g = c.getContext("2d");
+  g.fillStyle = "#b81f26"; g.fillRect(0, 0, 64, 64);
+  for (let i = -64; i < 128; i += 16) {          // twisted plies
+    g.strokeStyle = "rgba(90, 6, 12, .55)"; g.lineWidth = 5;
+    g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.stroke();
+    g.strokeStyle = "rgba(255, 140, 140, .35)"; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(i + 7, 0); g.lineTo(i + 71, 64); g.stroke();
   }
-  return d;
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
 }
+
+function buildGL() {
+  const canvas = $("#thread3d");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setClearColor(0, 0);
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(0, 1, 0, -1, -500, 500);
+  scene.add(new THREE.AmbientLight(0xffffff, .55));
+  const key = new THREE.DirectionalLight(0xffffff, .9); key.position.set(-.5, .7, 1); scene.add(key);
+  const base = yarnTexture();
+  const tubes = [null, null];
+
+  const heartShape = new THREE.Shape();
+  heartShape.moveTo(0, -6);
+  heartShape.bezierCurveTo(-2, -4, -8, -1, -8, 3); heartShape.bezierCurveTo(-8, 7, -3, 8, 0, 4.5);
+  heartShape.bezierCurveTo(3, 8, 8, 7, 8, 3); heartShape.bezierCurveTo(8, -1, 2, -4, 0, -6);
+  const heartGeo = new THREE.ExtrudeGeometry(heartShape, { depth: 2.5, bevelEnabled: true, bevelSize: 1, bevelThickness: 1, bevelSegments: 2 });
+  heartGeo.center();
+
+  function makeTube(i, pts) {
+    if (tubes[i]) { scene.remove(tubes[i].mesh); tubes[i].mesh.geometry.dispose(); tubes[i].mesh.material.map.dispose(); tubes[i].mesh.material.dispose(); }
+    const curve = new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => new THREE.Vector3(x, -y, z || 0)), false, "centripetal");
+    const length = curve.getLength(), segs = Math.max(40, Math.round(length / 4)), radial = 8;
+    const geo = new THREE.TubeGeometry(curve, segs, 2.4, radial, false);
+    const map = base.clone(); map.needsUpdate = true; map.repeat.set(length / 9, 1);
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map, roughness: .8, metalness: 0 }));
+    scene.add(mesh);
+    const samples = [];
+    for (let k = 0; k <= 300; k++) { const u = k / 300; samples.push([u, -curve.getPointAt(u).y]); }
+    tubes[i] = { mesh, geo, segs, radial, curve, samples };
+  }
+  function setProgress(i, f) {
+    const tb = tubes[i]; if (!tb) return;
+    tb.geo.setDrawRange(0, Math.round(tb.segs * Math.max(0, Math.min(1, f))) * tb.radial * 6);
+  }
+
+  function resize() {
+    renderer.setSize(innerWidth, innerHeight, false);
+    camera.left = 0; camera.right = innerWidth; camera.top = 0; camera.bottom = -innerHeight; camera.updateProjectionMatrix();
+  }
+  resize(); addEventListener("resize", resize);
+
+  let burstDone = false;
+  function burst() {
+    if (burstDone || !tubes[1]) return; burstDone = true;
+    const end = tubes[1].curve.getPointAt(1);
+    for (let i = 0; i < 18; i++) {
+      const m = new THREE.Mesh(heartGeo, new THREE.MeshStandardMaterial({ color: 0xc8262c, roughness: .5, transparent: true }));
+      m.position.copy(end); m.scale.setScalar(.1);
+      scene.add(m);
+      const dx = (Math.random() - .5) * 220, dy = 60 + Math.random() * 220, s = .6 + Math.random() * .9, d = 1.6 + Math.random() * 1.4;
+      gsap.timeline({ onComplete: () => scene.remove(m) })
+        .to(m.scale, { x: s, y: s, z: s, duration: .5, ease: "back.out(2)" }, 0)
+        .to(m.position, { x: end.x + dx, y: end.y + dy, duration: d, ease: "power2.out" }, 0)
+        .to(m.rotation, { y: (Math.random() - .5) * 8, x: (Math.random() - .5) * 2, duration: d }, 0)
+        .to(m.material, { opacity: 0, duration: .6 }, d - .5);
+    }
+  }
+
+  gsap.ticker.add(() => {
+    const top = page.getBoundingClientRect().top;
+    camera.position.y = top;               // page y = -world y
+    renderer.render(scene, camera);
+  });
+  return { makeTube, setProgress, tubes, burst };
+}
+
 function center(el) {
   const r = el.getBoundingClientRect(), pr = page.getBoundingClientRect();
   return [r.left - pr.left + r.width / 2, r.top - pr.top + r.height / 2];
 }
 function build() {
-  const w = page.clientWidth, h = page.scrollHeight;
-  svg.setAttribute("width", w); svg.setAttribute("height", h); svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  if (!gl) return;
+  const w = page.clientWidth;
   const [sx, sy] = center($("#a1")), [kx, ky] = center($("#knot")), [ex, ey] = center($("#a2"));
-  const heroEnd = $(".hero").offsetTop + $(".hero").offsetHeight;
+  const hero = $(".hero"), heroEnd = hero.offsetTop + hero.offsetHeight;
   const swing = Math.min(w * .82, sx + 120);
-  p1.setAttribute("d", smooth([
-    [sx, sy], [swing, sy + (ky - sy) * .35], [kx - 30, ky - 60],
-    [kx, ky - 4], [kx + 22, ky + 14], [kx + 2, ky + 34], [kx - 20, ky + 12], [kx + 4, ky - 10], [kx + 40, ky + 50],
-    [w * .78, heroEnd - 40], [w * .7, heroEnd]
-  ]));
-  const pts = [[w * .7, heroEnd]];
-  document.querySelectorAll("section.s").forEach((s, i) => { pts.push([i % 2 ? w * .72 : w * .28, s.offsetTop + s.offsetHeight]); });
-  pts.push([Math.max(ex - 60, w * .4), ey - 70], [ex, ey]);
-  p2.setAttribute("d", smooth(pts));
-  L1 = p1.getTotalLength(); L2 = p2.getTotalLength();
-  samples = [];
-  for (let i = 0; i <= 300; i++) { const l = L2 * i / 300; samples.push([l, p2.getPointAtLength(l).y]); }
-  p1.style.strokeDasharray = L1; p2.style.strokeDasharray = L2;
+  gl.makeTube(0, [
+    [sx, sy, 0], [swing, sy + (ky - sy) * .35, 4], [kx - 30, ky - 60, 0],
+    [kx, ky - 4, 8], [kx + 22, ky + 14, -8], [kx + 2, ky + 34, 8], [kx - 20, ky + 12, -8], [kx + 4, ky - 10, 8], [kx + 40, ky + 50, 0],
+    [w * .78, heroEnd - 40, 0], [w * .7, heroEnd, 0]
+  ]);
+  const pts = [[w * .7, heroEnd, 0]];
+  document.querySelectorAll("section.s").forEach((s, i) => pts.push([i % 2 ? w * .72 : w * .28, s.offsetTop + s.offsetHeight, 0]));
+  pts.push([Math.max(ex - 60, w * .4), ey - 70, 0], [ex, ey, 0]);
+  gl.makeTube(1, pts);
   draw(); onScroll(true);
 }
 function draw() {
-  p1.style.strokeDashoffset = L1 * (1 - S.intro);
-  p2.style.strokeDashoffset = L2 - S.len;
+  if (!gl) return;
+  gl.setProgress(0, S.intro); gl.setProgress(1, S.len);
+  if (S.len > .995) gl.burst();
 }
 function targetLen() {
   const doc = document.scrollingElement;
-  if (doc.scrollTop + innerHeight >= doc.scrollHeight - 4) return L2;
-  const y = doc.scrollTop + innerHeight * .62 - page.getBoundingClientRect().top - doc.scrollTop;
+  if (doc.scrollTop + innerHeight >= doc.scrollHeight - 4) return 1;
+  const y = innerHeight * .62 - page.getBoundingClientRect().top;
   let best = 0;
-  for (const [l, py] of samples) { if (py <= y) best = l; else break; }
+  for (const [u, py] of gl.tubes[1].samples) { if (py <= y) best = u; else break; }
   return best;
 }
 const lenTo = gsap.quickTo(S, "len", { duration: reduce ? .01 : .8, ease: "power2.out", onUpdate: draw });
-function onScroll(instant) { if (S.intro < 1) return; const t = targetLen(); if (instant === true) { S.len = t; draw(); } else lenTo(t); }
+function onScroll(instant) {
+  if (!gl || S.intro < 1) return;
+  const t = targetLen();
+  if (instant === true) { S.len = t; draw(); } else lenTo(t);
+}
 addEventListener("scroll", onScroll, { passive: true });
 let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(build, 150); });
 
 build();
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
   build();
-  const tl = gsap.timeline();
-  tl.from(".hero .r", { y: 24, opacity: 0, duration: .9, stagger: .12, ease: "power3.out" })
+  gsap.timeline()
+    .from(".hero .r", { y: 24, opacity: 0, duration: .9, stagger: .12, ease: "power3.out" })
     .to(S, { intro: 1, duration: reduce ? .2 : 2.6, ease: "power2.inOut", onUpdate: draw, onComplete: () => onScroll() }, .3);
 });
 </script>
+
 </body>
 </html>

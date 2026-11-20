@@ -39,6 +39,8 @@ body { background: var(--bg); color: var(--fg); font: 400 16px/1.7 var(--f-text)
 .latin { font: 400 clamp(1.1rem, 5vw, 1.4rem)/1.3 var(--f-latin); letter-spacing: .2em; text-transform: uppercase; margin: .4rem 0 0; }
 .rule { width: 44px; height: 1px; background: var(--gold); margin: 1.2rem 0; }
 .date-ar { font: 400 1.35rem/1.5 var(--f-cal); margin: 0; }
+.tap-hint { position: absolute !important; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); left: 0; right: 0; margin: 0; font: 400 .8rem/1.4 var(--f-ar); color: var(--muted); }
+.tap-hint span { font-family: var(--f-body); letter-spacing: .08em; }
 .date-en { font: 400 .76rem/1.4 var(--f-body); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: .3rem 0 0; }
 
 .wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -79,26 +81,9 @@ footer p { margin: .4rem 0 0; letter-spacing: .3em; font: .72rem var(--f-body); 
 </div>
 
 <header class="hero">
-  <svg class="ink" id="ink" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <defs>
-      <filter id="bleed" x="-40%" y="-40%" width="180%" height="180%">
-        <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"></feTurbulence>
-        <feDisplacementMap id="disp" in="SourceGraphic" scale="50"></feDisplacementMap>
-        <feGaussianBlur stdDeviation="2.4"></feGaussianBlur>
-      </filter>
-      <radialGradient id="inkfill"><stop offset="0" stop-color="#0d0d0d" stop-opacity=".92"></stop><stop offset=".65" stop-color="#262626" stop-opacity=".35"></stop><stop offset="1" stop-color="#262626" stop-opacity="0"></stop></radialGradient>
-      <radialGradient id="leaf"><stop offset="0" stop-color="#ecd08a"></stop><stop offset="1" stop-color="#a77f2c"></stop></radialGradient>
-    </defs>
-    <g filter="url(#bleed)">
-      <circle class="blot" cx="318" cy="170" r="96" fill="url(#inkfill)" opacity=".55"></circle>
-      <circle class="blot" cx="70" cy="330" r="64" fill="url(#inkfill)" opacity=".38"></circle>
-      <circle class="blot" cx="270" cy="660" r="130" fill="url(#inkfill)" opacity=".26"></circle>
-      <circle class="blot" cx="110" cy="560" r="40" fill="url(#inkfill)" opacity=".3"></circle>
-    </g>
-    <circle class="drop" cx="318" cy="170" r="6" fill="#111"></circle>
-    <circle class="drop" cx="70" cy="330" r="5" fill="#111"></circle>
-    <circle class="drop" cx="270" cy="660" r="7" fill="#111"></circle>
-    <circle class="drop" cx="110" cy="560" r="4" fill="#111"></circle>
+  <canvas class="ink" id="inkgl" aria-hidden="true"></canvas>
+  <svg class="ink" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><radialGradient id="leaf"><stop offset="0" stop-color="#ecd08a"></stop><stop offset="1" stop-color="#a77f2c"></stop></radialGradient></defs>
     <circle id="goldring" cx="200" cy="370" r="118" fill="none" stroke="#b8913a" stroke-width="1.2" opacity=".85"></circle>
     <g id="dust" fill="url(#leaf)"></g>
   </svg>
@@ -109,6 +94,7 @@ footer p { margin: .4rem 0 0; letter-spacing: .3em; font: .72rem var(--f-body); 
   <div class="rule h"></div>
   <p class="date-ar h" dir="rtl" id="dateAr">الجمعة ١٩ مارس ٢٠٢٧</p>
   <p class="date-en h" lang="en" id="dateEn">Friday · 19 March 2027 · 7 PM</p>
+  <p class="tap-hint" dir="rtl">المس الصفحة لتسقط نقطة حبر · <span lang="en">tap to drop ink</span></p>
 </header>
 
 <main>
@@ -145,6 +131,7 @@ footer p { margin: .4rem 0 0; letter-spacing: .3em; font: .72rem var(--f-body); 
   <footer><div class="mono" id="mono">ك و إ</div><p id="dShort">19 · 03 · 2027</p></footer>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 /* ===== EDIT YOUR DETAILS HERE (Arabic + English) ===== */
@@ -233,8 +220,94 @@ $("#rsvp").addEventListener("submit", (e) => {
   }
 });
 
-/* ===== the ink moment ===== */
+/* ===== the ink moment (Three.js shader: ink drops blooming in water) ===== */
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const hero = $(".hero");
+let ink = null;
+try { ink = buildInk(); } catch (err) { ink = null; }
+
+function buildInk() {
+  const canvas = $("#inkgl");
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, premultipliedAlpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.setClearColor(0, 0);
+  const scene = new THREE.Scene(), camera = new THREE.Camera();
+  const drops = Array.from({ length: 8 }, () => new THREE.Vector4(0, 0, 0, 0));
+  const uniforms = { uRes: { value: new THREE.Vector2(1, 1) }, uTime: { value: 0 }, uDrops: { value: drops } };
+  const mat = new THREE.ShaderMaterial({
+    uniforms, blending: THREE.NoBlending, depthTest: false, depthWrite: false,
+    vertexShader: `void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+    fragmentShader: `
+      precision highp float;
+      uniform vec2 uRes; uniform float uTime; uniform vec4 uDrops[8];
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float noise(vec2 p) { vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+        return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y); }
+      float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+      void main() {
+        vec2 p = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;
+        float inkD = 0.0, rim = 0.0, drop = 0.0;
+        for (int i = 0; i < 8; i++) {
+          vec4 d = uDrops[i];
+          if (d.w <= 0.0) continue;
+          float age = uTime - d.z;
+          vec2 q = p - d.xy;
+          if (age < 0.0) {
+            if (age > -0.55) { vec2 dp = vec2(0.0, (-age) / 0.55 * 0.9); drop = max(drop, smoothstep(0.016, 0.009, length(q - dp))); }
+            continue;
+          }
+          float R = d.w * (1.0 - exp(-age * 1.15));
+          vec2 w = vec2(fbm(q * 3.2 + d.z + age * 0.04), fbm(q * 3.2 - d.z - age * 0.04)) - 0.5;
+          float dist = length(q + w * 0.26 * (R / d.w + 0.15));
+          float body = smoothstep(R, R * 0.3, dist);
+          float tendr = fbm(q * 9.0 + w * 2.5 + age * 0.025);
+          body *= 0.45 + 0.75 * tendr;
+          float edge = smoothstep(R * 0.72, R * 0.95, dist) * smoothstep(R * 1.04, R * 0.9, dist);
+          float fade = 1.0 - 0.3 * smoothstep(1.5, 9.0, age);
+          inkD = 1.0 - (1.0 - inkD) * (1.0 - clamp(body * fade, 0.0, 1.0));
+          rim = max(rim, edge * 0.55 * fade);
+          rim = max(rim, smoothstep(0.006, 0.0, abs(length(q) - age * 0.34)) * exp(-age * 1.5) * 0.4);
+        }
+        float a = clamp(max(max(inkD * 0.92, rim), drop), 0.0, 1.0);
+        vec3 col = mix(vec3(0.17, 0.17, 0.2), vec3(0.03, 0.03, 0.04), clamp(inkD + drop, 0.0, 1.0));
+        gl_FragColor = vec4(col * a, a);
+      }`
+  });
+  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
+
+  const seed = [[.86, .12, .13], [.1, .36, .085], [.8, .93, .15], [.14, .86, .07]];
+  let W = 1, H = 1;
+  const toSpace = (fx, fy) => [(fx - .5) * W / H, .5 - fy];
+  function resize() {
+    W = hero.clientWidth; H = hero.clientHeight;
+    renderer.setSize(W, H, false);
+    const b = renderer.getDrawingBufferSize(new THREE.Vector2()); uniforms.uRes.value.copy(b);
+    seed.forEach(([fx, fy, s], i) => { const [x, y] = toSpace(fx, fy); drops[i].x = x; drops[i].y = y; drops[i].w = s; });
+  }
+  resize(); addEventListener("resize", resize);
+
+  const clock = { t: 0 };
+  seed.forEach((s, i) => { drops[i].z = .75 + i * .28; });
+  let next = 4;
+  hero.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button, a")) return;
+    const r = hero.getBoundingClientRect();
+    const [x, y] = toSpace((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+    drops[next].set(x, y, clock.t + .55, .06 + Math.random() * .05);
+    next = next === 7 ? 4 : next + 1;
+  });
+
+  let visible = true;
+  new IntersectionObserver(([en]) => { visible = en.isIntersecting; }).observe(hero);
+  gsap.ticker.add((t, dms) => {
+    clock.t += Math.min(dms / 1000, .05) * (reduce ? 4 : 1);
+    uniforms.uTime.value = clock.t;
+    if (visible) renderer.render(scene, camera);
+  });
+  return { clock };
+}
+
+/* gold dust + text choreography */
 const dust = $("#dust");
 for (let i = 0; i < 26; i++) {
   const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -243,20 +316,17 @@ for (let i = 0; i < 26; i++) {
 }
 const k = reduce ? .3 : 1;
 const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
-tl.from(".drop", { attr: { cy: -40 }, duration: .7 * k, ease: "power2.in", stagger: .22 * k })
-  .to(".drop", { opacity: 0, duration: .15, stagger: .22 * k }, .65 * k)
-  .from(".blot", { scale: 0, transformOrigin: "50% 50%", duration: 1.6 * k, stagger: .22 * k, ease: "expo.out" }, .65 * k)
-  .from("#disp", { attr: { scale: 140 }, duration: 2.4 * k, ease: "power3.out" }, .65 * k)
-  .from(".invite-ar", { opacity: 0, y: 12, duration: .8 * k }, 1.1 * k)
-  .from("#goldring", { attr: { r: 40 }, opacity: 0, duration: 1.4 * k, ease: "expo.out" }, 1.2 * k)
+tl.from(".invite-ar", { opacity: 0, y: 12, duration: .8 * k }, 1.0 * k)
+  .from("#goldring", { attr: { r: 40 }, opacity: 0, duration: 1.4 * k, ease: "expo.out" }, 1.1 * k)
   .fromTo("#cal", { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: 2 * k, ease: "power1.inOut" }, 1.4 * k)
   .from(".latin", { clipPath: "inset(0 100% 0 0)", duration: 1.2 * k, ease: "power1.inOut" }, 2.9 * k)
   .from(".rule, .date-ar, .date-en", { opacity: 0, y: 10, duration: .7 * k, stagger: .12 * k }, 3.3 * k)
-  .from("#dust circle", { opacity: 0, scale: 0, transformOrigin: "50% 50%", duration: .8, stagger: { each: .03, from: "random" } }, 2.2 * k);
+  .from("#dust circle", { opacity: 0, scale: 0, transformOrigin: "50% 50%", duration: .8, stagger: { each: .03, from: "random" } }, 2.2 * k)
+  .from(".tap-hint", { opacity: 0, duration: .8 }, 4 * k);
 if (!reduce) {
   gsap.utils.toArray("#dust circle").forEach((c) => gsap.to(c, { attr: { cy: "-=" + (20 + Math.random() * 40) }, duration: 4 + Math.random() * 4, yoyo: true, repeat: -1, ease: "sine.inOut", delay: Math.random() * 2 }));
-  gsap.to("#turb", { attr: { baseFrequency: .026 }, duration: 6, yoyo: true, repeat: -1, ease: "sine.inOut" });
 }
 </script>
+
 </body>
 </html>

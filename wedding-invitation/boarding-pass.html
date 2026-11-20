@@ -50,10 +50,11 @@ body.open { overflow-y: auto; }
 .hint { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .hint span { font-size: .74rem; letter-spacing: .24em; text-transform: uppercase; }
 .linkbtn { appearance: none; border: 0; background: none; color: var(--muted); font: 400 .8rem var(--f-body); text-decoration: underline; cursor: pointer; min-height: 44px; }
-.plane { position: absolute; top: 18%; left: -60px; width: 46px; opacity: 0; color: var(--fg); }
 .toast { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); font: italic 400 1.6rem/1.2 var(--f-display); white-space: nowrap; opacity: 0; }
 
-.content { position: relative; }
+.content { position: relative; z-index: 1; }
+#sky3d { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.stage { z-index: 1; }
 .wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 section.s { padding-block: 2.5rem; text-align: center; }
 .s h2 { font: italic 400 clamp(2rem, 8vw, 2.6rem)/1.15 var(--f-display); margin: .4rem 0 1.4rem; text-wrap: balance; }
@@ -81,6 +82,8 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 </style>
 </head>
 <body>
+
+<canvas id="sky3d" aria-hidden="true"></canvas>
 
 <div class="stage" id="stage">
   <p class="eyebrow">You're cleared for boarding</p>
@@ -111,7 +114,6 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
     <span>Drag the stub down to tear</span>
     <button class="linkbtn" id="tearBtn" type="button">or tap here</button>
   </div>
-  <svg class="plane" id="plane" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"></path></svg>
   <p class="toast" id="toast">Have a lovely flight</p>
 </div>
 
@@ -149,6 +151,7 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
   <footer><div class="code" id="mono">K &amp; E</div><p id="dShort">19 · 03 · 2027</p></footer>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
 <script>
@@ -204,6 +207,101 @@ $("#rsvp").addEventListener("submit", (e) => {
   }
 });
 
+/* ===== Three.js sky: drifting clouds and a paper plane ===== */
+let sky = null;
+try { sky = buildSky(); } catch (err) { sky = null; }
+
+function buildSky() {
+  const canvas = $("#sky3d");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const bg = document.createElement("canvas"); bg.width = 2; bg.height = 256;
+  const bgc = bg.getContext("2d"), grd = bgc.createLinearGradient(0, 0, 0, 256);
+  grd.addColorStop(0, "#a9cde8"); grd.addColorStop(.55, "#cfe1ee"); grd.addColorStop(1, "#eef4f8");
+  bgc.fillStyle = grd; bgc.fillRect(0, 0, 2, 256);
+  scene.background = new THREE.CanvasTexture(bg);
+  const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, .1, 200);
+  camera.position.z = 10;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb3c8, .95));
+  const sun = new THREE.DirectionalLight(0xffffff, .7); sun.position.set(3, 6, 5); scene.add(sun);
+
+  // soft cloud texture made of overlapping puffs
+  const cc = document.createElement("canvas"); cc.width = 256; cc.height = 128;
+  const g = cc.getContext("2d");
+  [[70, 80, 46], [120, 62, 56], [176, 78, 44], [100, 92, 40], [150, 94, 42], [205, 92, 30]].forEach(([x, y, r]) => {
+    const rg = g.createRadialGradient(x, y, 0, x, y, r);
+    rg.addColorStop(0, "rgba(255,255,255,.95)"); rg.addColorStop(.6, "rgba(255,255,255,.55)"); rg.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = rg; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  });
+  const cloudTex = new THREE.CanvasTexture(cc);
+  const halfW = (z) => (camera.position.z - z) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
+
+  const clouds = [];
+  for (let i = 0; i < 46; i++) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, opacity: .45 + Math.random() * .5 }));
+    const z = -34 + Math.random() * 38;
+    const w = 3.5 + Math.random() * 6;
+    s.scale.set(w, w * .5, 1);
+    s.position.set((Math.random() * 2 - 1) * (halfW(z) + 6), -8 + Math.random() * 18, z);
+    s.userData.v = .25 + Math.random() * .35;
+    scene.add(s); clouds.push(s);
+  }
+
+  // folded paper plane
+  const pg = new THREE.BufferGeometry();
+  const N = [1.3, 0, 0], TL = [-.9, .04, -.75], TR = [-.9, .04, .75], TC = [-.9, .04, 0], K = [-.9, -.28, 0];
+  pg.setAttribute("position", new THREE.Float32BufferAttribute([...N, ...TC, ...TL, ...N, ...TR, ...TC, ...N, ...K, ...TC, ...N, ...TC, ...K], 3));
+  pg.computeVertexNormals();
+  const plane = new THREE.Mesh(pg, new THREE.MeshStandardMaterial({ color: 0xd9543a, roughness: .8, side: THREE.DoubleSide, flatShading: true }));
+  const pilot = new THREE.Group(); pilot.add(plane); scene.add(pilot);
+  plane.rotation.x = .25;
+  pilot.position.set(-.85, -2.35, 0); pilot.rotation.set(.85, -.25, .25); pilot.scale.setScalar(.85);
+  const bob = gsap.to(pilot.position, { y: "+=.25", duration: 1.6, yoyo: true, repeat: -1, ease: "sine.inOut" });
+  const roll = gsap.to(plane.rotation, { x: -.1, duration: 2.1, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+  // contrail puffs
+  const puffs = [];
+  let trailing = false, lastPuff = 0;
+  function puff(p) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, opacity: .85 }));
+    s.position.copy(p); s.scale.set(.5, .25, 1); scene.add(s);
+    gsap.to(s.scale, { x: 2.4, y: 1.2, duration: 1.8, ease: "power2.out" });
+    gsap.to(s.material, { opacity: 0, duration: 1.8, ease: "power1.in", onComplete: () => scene.remove(s) });
+  }
+
+  const wind = { k: 1 };
+  function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); }
+  resize(); addEventListener("resize", resize);
+  const tail = new THREE.Vector3();
+
+  gsap.ticker.add((t, dms) => {
+    const dt = Math.min(dms / 1000, .05);
+    clouds.forEach((c) => {
+      c.position.x -= c.userData.v * wind.k * dt * (1 + (c.position.z + 34) / 30);
+      const hw = halfW(c.position.z) + c.scale.x;
+      if (c.position.x < -hw) c.position.x = hw;
+    });
+    if (trailing && t - lastPuff > .035) { lastPuff = t; tail.set(-1, 0, 0).applyQuaternion(pilot.quaternion).multiplyScalar(.9 * pilot.scale.x).add(pilot.position); puff(tail); }
+    renderer.render(scene, camera);
+  });
+
+  return {
+    takeoff(k) {
+      bob.kill(); roll.kill(); trailing = true;
+      gsap.timeline({ onComplete: () => { trailing = false; } })
+        .to(wind, { k: 14, duration: .8 * k, ease: "power2.in" }, 0)
+        .to(pilot.position, { x: 1.4, y: -.6, z: 4, duration: .9 * k, ease: "power2.inOut" }, 0)
+        .to(pilot.rotation, { x: .5, y: .25, z: .55, duration: .9 * k, ease: "power2.inOut" }, 0)
+        .to(plane.rotation, { x: -.9, duration: .6 * k, yoyo: true, repeat: 1, ease: "sine.inOut" }, .2 * k)
+        .to(pilot.position, { x: 6, y: 9, z: -30, duration: 1.8 * k, ease: "power2.in" }, .9 * k)
+        .to(pilot.rotation, { y: -.4, z: .9, duration: 1.8 * k }, .9 * k)
+        .to(camera.position, { y: .4, duration: 1.2 * k, yoyo: true, repeat: 1, ease: "sine.inOut" }, .3 * k)
+        .to(wind, { k: 1.5, duration: 2.2 * k, ease: "power2.out" }, 1.4 * k);
+    }
+  };
+}
+
 /* ===== the tear ===== */
 gsap.registerPlugin(Draggable);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -226,8 +324,7 @@ function tear() {
   tl.to("#stub", { y: "+=" + innerHeight, x: 70, rotation: 24, duration: 1 * k, ease: "power2.in" })
     .to("#hint", { opacity: 0, duration: .3 }, 0)
     .to("#pass", { y: -10, rotation: 1.5, duration: .25, yoyo: true, repeat: 1, ease: "power1.out" }, 0)
-    .to("#plane", { opacity: 1, duration: .2 }, .5 * k)
-    .to("#plane", { x: innerWidth + 140, y: -60, rotation: 90, duration: 1.6 * k, ease: "power1.inOut" }, .5 * k)
+    .add(() => sky && sky.takeoff(k), .35 * k)
     .fromTo("#toast", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .6 }, .9 * k)
     .add(() => {
       $("#content").hidden = false; document.body.classList.add("open");

@@ -138,6 +138,12 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
 /* ===== EDIT YOUR DETAILS HERE ===== */
@@ -192,7 +198,7 @@ $("#rsvp").addEventListener("submit", (e) => {
 /* ===== Three.js lantern sky ===== */
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const canvas = $("#sky");
-let renderer, scene, camera, hero, released = false;
+let renderer, scene, camera, hero, composer, bloom, released = false;
 const lanterns = [], AMBIENT = 30, TOTAL = 170;
 const visH = (z) => 2 * (camera.position.z - z) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
 
@@ -217,10 +223,19 @@ function place(s, anywhere) {
 }
 
 try {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setClearColor(0, 0);
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
   scene = new THREE.Scene();
+  const bgc = document.createElement("canvas"); bgc.width = 2; bgc.height = 256;
+  const bgx = bgc.getContext("2d"), grd = bgx.createLinearGradient(0, 0, 0, 256);
+  grd.addColorStop(0, "#0b0c26"); grd.addColorStop(.55, "#211a46"); grd.addColorStop(1, "#3a2552");
+  bgx.fillStyle = grd; bgx.fillRect(0, 0, 2, 256);
+  scene.background = new THREE.CanvasTexture(bgc);
   camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, .1, 100); camera.position.z = 10;
+  composer = new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene, camera));
+  bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .75, .55, .38);
+  composer.addPass(bloom);
   const tex = lanternTexture();
   for (let i = 0; i < TOTAL; i++) {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
@@ -228,7 +243,7 @@ try {
   }
   hero = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   hero.scale.set(1.8, 2.25, 1); hero.visible = false; scene.add(hero);
-  const resize = () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
+  const resize = () => { renderer.setSize(innerWidth, innerHeight, false); composer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
   resize(); addEventListener("resize", resize);
   let t = 0;
   gsap.ticker.add((time, dms) => {
@@ -242,7 +257,7 @@ try {
       if (s.position.y > visH(s.position.z) / 2 + 1.2) { if (released || i < AMBIENT) place(s, false); else s.visible = false; }
     });
     if (hero.visible) hero.material.opacity = .9 + .1 * Math.sin(t * 7);
-    renderer.render(scene, camera);
+    composer.render();
   });
 } catch (err) { renderer = null; }
 
@@ -264,6 +279,7 @@ function release() {
     const h = visH(4);
     hero.position.set(0, -h / 2 + h * .2, 4); hero.visible = true;
     tl.from(hero.scale, { x: .2, y: .25, duration: .6, ease: "back.out(2)" }, 0)
+      .to(bloom, { strength: 1.5, duration: .5, yoyo: true, repeat: 1, ease: "power2.out" }, 0)
       .to(hero.position, { y: visH(-8) / 2 + 2, z: -8, x: .8, duration: 7 * k, ease: "power1.in" }, .3);
     lanterns.slice(AMBIENT).forEach((s) => gsap.delayedCall(.6 + Math.random() * 4.5 * k, () => { place(s, false); s.visible = true; }));
   }
