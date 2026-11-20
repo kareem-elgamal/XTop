@@ -157,7 +157,7 @@ const CONFIG = {
   date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
   timeShort: "7 PM",
   coords: "30.04° N · 31.24° E",
-  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapQuery: "Maadi Corniche, Cairo",
+  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
   rsvpBy: "5 March 2027",
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
@@ -175,7 +175,7 @@ $("#bigSub").textContent = `${CONFIG.venue} · ${CONFIG.timeShort}`;
 $("#dShort").textContent = dShort.join(" · ");
 $("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
 $("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
-$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+$("#mapLink").href = CONFIG.mapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
 const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
 $("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
   + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))

@@ -263,7 +263,7 @@ const CONFIG = {
   durationHours: 5,
   venue: "The Garden Hall",
   address: "Nile Corniche, Maadi, Cairo",
-  mapQuery: "Maadi Corniche, Cairo",    // what Google Maps should search for
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",    // what Google Maps should search for
   rsvpBy: "5 March 2027",
   whatsapp: "",                         // e.g. "201001234567" (country code, no +). Empty = thank-you only
   program: [
@@ -285,7 +285,7 @@ $("#dTime").textContent = CONFIG.timeText;
 $("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
 $("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
 $("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
-$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+$("#mapLink").href = CONFIG.mapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
 const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
 const end = new Date(when.getTime() + CONFIG.durationHours * 3600e3);
 $("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE"

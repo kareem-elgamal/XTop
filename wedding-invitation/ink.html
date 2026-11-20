@@ -141,7 +141,7 @@ const CONFIG = {
   date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
   venue: { ar: "قاعة الحديقة", en: "The Garden Hall" },
   address: { ar: "كورنيش النيل، المعادي، القاهرة", en: "Nile Corniche, Maadi, Cairo" },
-  mapQuery: "Maadi Corniche, Cairo",
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
   rsvpBy: { ar: "٥ مارس ٢٠٢٧", en: "5 March 2027" },
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [
@@ -178,7 +178,7 @@ $("#mono").textContent = `${CONFIG.name1Ar[0]} و ${CONFIG.name2Ar[0]}`;
 $("#dateAr").textContent = fmt("ar-EG", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 $("#dateEn").textContent = fmt("en-GB", { weekday: "long" }) + " · " + fmt("en-GB", { day: "numeric", month: "long", year: "numeric" }) + " · " + CONFIG.program[0].time.en;
 $("#dShort").textContent = fmt("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
-$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+$("#mapLink").href = CONFIG.mapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
 const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
 $("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
   + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
