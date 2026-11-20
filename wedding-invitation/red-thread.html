@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Red Thread Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,400;1,6..96,500&family=Jost:wght@300;400&display=swap">
+<style>
+/* Layout: a long white page; one red thread starts at his name, ties a knot at the date,
+   weaves behind every card as you scroll, and ends at her name in the footer. One light look. */
+:root {
+  --bg: #fbfaf7; --fg: #1d1b1a; --muted: #6a625d; --accent: #b81f26; --on-accent: #ffffff;
+  --line: rgba(29, 27, 26, .14); --card: #ffffff; --field: #fbfaf7; --radius: 4px;
+  --f-display: "Bodoni Moda", "Didot", Georgia, serif;
+  --f-body: "Jost", "Avenir Next", system-ui, sans-serif;
+  color-scheme: light;
+}
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); }
+#page { position: relative; overflow: hidden; }
+#thread { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 0; }
+#thread path { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.layer { position: relative; z-index: 1; }
+.wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.label { font: 400 .72rem/1.4 var(--f-body); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.name { font: italic 400 clamp(3.6rem, 17vw, 5.4rem)/1 var(--f-display); margin: .3rem 0 0; display: inline-flex; align-items: center; gap: .5rem; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); display: inline-block; flex-shrink: 0; }
+
+.hero { min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; padding-block: 64px 40px; }
+.knot-row { margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 28px; padding-left: 40px; }
+.knot { width: 10px; height: 10px; }
+.date b { display: block; font: italic 500 2.6rem/1 var(--f-display); color: var(--accent); }
+.date span { font-size: .74rem; letter-spacing: .26em; text-transform: uppercase; color: var(--muted); }
+.lede { max-width: 18rem; margin: 2.4rem 0 0 auto; text-align: right; color: var(--muted); text-wrap: balance; }
+.cue { margin-top: auto; padding-top: 2rem; font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+
+section.s { padding-block: 3.2rem; text-align: center; }
+.s h2 { font: italic 400 clamp(2.2rem, 9vw, 2.9rem)/1.1 var(--f-display); margin: .4rem 0 1.4rem; text-wrap: balance; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 2.2rem 1.4rem; box-shadow: 0 1px 0 var(--line); }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.count div { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.count b { font: italic 400 clamp(2rem, 9vw, 2.7rem)/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.count span, .form label { font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.venue-name { font: italic 400 1.7rem/1.2 var(--f-display); margin: 0; }
+.program { list-style: none; padding: 0; margin: 1.4rem auto 1.8rem; max-width: 19rem; text-align: left; }
+.program li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .8rem; padding-block: .65rem; border-bottom: 1px solid var(--line); }
+.program li:last-child { border-bottom: 0; }
+.program time { color: var(--accent); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
+.btn { appearance: none; cursor: pointer; text-decoration: none; font: 400 .74rem/1 var(--f-body); letter-spacing: .2em; text-transform: uppercase; padding: 0 1.3rem; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--accent); color: var(--on-accent); background: var(--accent); }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--fg); }
+.form { display: grid; gap: .8rem; text-align: left; margin-top: 1.4rem; }
+.field { width: 100%; box-sizing: border-box; font: 300 1rem/1.4 var(--f-body); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 2px; padding: .85rem 1rem; }
+.done { margin: 1.2rem 0 0; font: italic 400 1.5rem/1.3 var(--f-display); color: var(--accent); }
+footer { padding-block: 3rem 4rem; text-align: right; }
+footer .meta { margin-top: 1.4rem; font-size: .72rem; letter-spacing: .3em; color: var(--muted); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<div id="page">
+  <svg id="thread" aria-hidden="true"><path id="p1"></path><path id="p2"></path></svg>
+
+  <div class="layer">
+    <header class="hero wrap">
+      <p class="label r">From his side</p>
+      <h1 class="name r"><span data-k="name1">Kareem</span><span class="dot" id="a1"></span></h1>
+      <div class="knot-row r">
+        <span class="knot" id="knot"></span>
+        <div class="date"><b id="dNum">19.03</b><span id="dSub">2027 · 7 PM</span></div>
+      </div>
+      <p class="lede r">Two names, one thread. Join us as we tie the knot.</p>
+      <p class="cue r">Follow the thread</p>
+    </header>
+
+    <section class="s"><div class="wrap"><div class="card">
+      <p class="label">Counting down</p>
+      <h2>Until the knot</h2>
+      <div class="count" role="timer"><div><b id="cD">00</b><span>Days</span></div><div><b id="cH">00</b><span>Hours</span></div><div><b id="cM">00</b><span>Minutes</span></div><div><b id="cS">00</b><span>Seconds</span></div></div>
+      <p class="muted" id="countNote" style="margin: 1.4rem 0 0">We can't wait to celebrate with you.</p>
+    </div></div></section>
+
+    <section class="s"><div class="wrap"><div class="card">
+      <p class="label">The celebration</p>
+      <h2>Where &amp; when</h2>
+      <p class="venue-name" data-k="venue">The Garden Hall</p>
+      <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+      <ul class="program" id="program"></ul>
+      <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
+    </div></div></section>
+
+    <section class="s"><div class="wrap"><div class="card">
+      <p class="label">RSVP</p>
+      <h2>Will you join us?</h2>
+      <p class="muted" style="margin: 0">Kindly reply by <span data-k="rsvpBy">5 March 2027</span>.</p>
+      <form class="form" id="rsvp">
+        <label for="guestName">Your name</label>
+        <input class="field" id="guestName" autocomplete="name" placeholder="e.g. Mariam Adel" required>
+        <label for="guestCount">Number of guests</label>
+        <select class="field" id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+        <div class="actions"><button class="btn" type="submit" value="yes">Joyfully accept</button><button class="btn ghost" type="submit" value="no">Regretfully decline</button></div>
+      </form>
+      <p class="done" id="rsvpDone" hidden></p>
+    </div></div></section>
+
+    <footer class="wrap">
+      <h2 class="name" style="justify-content: flex-end"><span class="dot" id="a2"></span><span data-k="name2">Esraa</span></h2>
+      <p class="label" style="margin-top: .4rem">To her side</p>
+      <p class="meta" id="dShort">19 · 03 · 2027</p>
+    </footer>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ===== EDIT YOUR DETAILS HERE ===== */
+const CONFIG = {
+  name1: "Kareem", name2: "Esraa",
+  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  timeShort: "7 PM",
+  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapQuery: "Maadi Corniche, Cairo",
+  rsvpBy: "5 March 2027",
+  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
+};
+
+/* ===== shared invitation logic ===== */
+const $ = (s) => document.querySelector(s);
+const when = new Date(CONFIG.date);
+const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
+document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+$("#dNum").textContent = fmt({ day: "2-digit" }) + "." + fmt({ month: "2-digit" });
+$("#dSub").textContent = fmt({ year: "numeric" }) + " · " + CONFIG.timeShort;
+$("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
+$("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
+$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+$("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
+  + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
+  + "&location=" + encodeURIComponent(CONFIG.venue + ", " + CONFIG.address);
+const pad = (n) => String(n).padStart(2, "0");
+function updateCount() {
+  const s = Math.floor((when - Date.now()) / 1000);
+  if (s <= 0) { $("#countNote").textContent = "The knot is tied. Thank you for celebrating with us."; return; }
+  $("#cD").textContent = pad(Math.floor(s / 86400)); $("#cH").textContent = pad(Math.floor(s / 3600) % 24);
+  $("#cM").textContent = pad(Math.floor(s / 60) % 60); $("#cS").textContent = pad(s % 60);
+}
+updateCount(); setInterval(updateCount, 1000);
+$("#rsvp").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const yes = e.submitter ? e.submitter.value === "yes" : true;
+  const name = $("#guestName").value.trim(), n = $("#guestCount").value;
+  const done = $("#rsvpDone");
+  done.textContent = yes ? `See you at the knot, ${name}!` : `We'll miss you, ${name}.`;
+  done.hidden = false; e.target.hidden = true;
+  if (CONFIG.whatsapp) {
+    const msg = yes ? `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. We'll be there! Guests: ${n}` : `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. Sadly we can't make it, but we're sending our love.`;
+    const a = Object.assign(document.createElement("a"), { href: `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, target: "_blank", rel: "noopener", className: "btn", textContent: "Send on WhatsApp" });
+    a.style.marginTop = "1rem"; done.after(a);
+  }
+  requestAnimationFrame(build);
+});
+
+/* ===== the thread ===== */
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const page = $("#page"), svg = $("#thread"), p1 = $("#p1"), p2 = $("#p2");
+const S = { intro: 0, len: 0 };
+let L1 = 0, L2 = 0, samples = [];
+
+function smooth(pts) {
+  let d = `M${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], a = pts[i], b = pts[i + 1], p3 = pts[i + 2] || b;
+    d += ` C${a[0] + (b[0] - p0[0]) / 6} ${a[1] + (b[1] - p0[1]) / 6} ${b[0] - (p3[0] - a[0]) / 6} ${b[1] - (p3[1] - a[1]) / 6} ${b[0]} ${b[1]}`;
+  }
+  return d;
+}
+function center(el) {
+  const r = el.getBoundingClientRect(), pr = page.getBoundingClientRect();
+  return [r.left - pr.left + r.width / 2, r.top - pr.top + r.height / 2];
+}
+function build() {
+  const w = page.clientWidth, h = page.scrollHeight;
+  svg.setAttribute("width", w); svg.setAttribute("height", h); svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  const [sx, sy] = center($("#a1")), [kx, ky] = center($("#knot")), [ex, ey] = center($("#a2"));
+  const heroEnd = $(".hero").offsetTop + $(".hero").offsetHeight;
+  const swing = Math.min(w * .82, sx + 120);
+  p1.setAttribute("d", smooth([
+    [sx, sy], [swing, sy + (ky - sy) * .35], [kx - 30, ky - 60],
+    [kx, ky - 4], [kx + 22, ky + 14], [kx + 2, ky + 34], [kx - 20, ky + 12], [kx + 4, ky - 10], [kx + 40, ky + 50],
+    [w * .78, heroEnd - 40], [w * .7, heroEnd]
+  ]));
+  const pts = [[w * .7, heroEnd]];
+  document.querySelectorAll("section.s").forEach((s, i) => { pts.push([i % 2 ? w * .72 : w * .28, s.offsetTop + s.offsetHeight]); });
+  pts.push([Math.max(ex - 60, w * .4), ey - 70], [ex, ey]);
+  p2.setAttribute("d", smooth(pts));
+  L1 = p1.getTotalLength(); L2 = p2.getTotalLength();
+  samples = [];
+  for (let i = 0; i <= 300; i++) { const l = L2 * i / 300; samples.push([l, p2.getPointAtLength(l).y]); }
+  p1.style.strokeDasharray = L1; p2.style.strokeDasharray = L2;
+  draw(); onScroll(true);
+}
+function draw() {
+  p1.style.strokeDashoffset = L1 * (1 - S.intro);
+  p2.style.strokeDashoffset = L2 - S.len;
+}
+function targetLen() {
+  const doc = document.scrollingElement;
+  if (doc.scrollTop + innerHeight >= doc.scrollHeight - 4) return L2;
+  const y = doc.scrollTop + innerHeight * .62 - page.getBoundingClientRect().top - doc.scrollTop;
+  let best = 0;
+  for (const [l, py] of samples) { if (py <= y) best = l; else break; }
+  return best;
+}
+const lenTo = gsap.quickTo(S, "len", { duration: reduce ? .01 : .8, ease: "power2.out", onUpdate: draw });
+function onScroll(instant) { if (S.intro < 1) return; const t = targetLen(); if (instant === true) { S.len = t; draw(); } else lenTo(t); }
+addEventListener("scroll", onScroll, { passive: true });
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(build, 150); });
+
+build();
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+  build();
+  const tl = gsap.timeline();
+  tl.from(".hero .r", { y: 24, opacity: 0, duration: .9, stagger: .12, ease: "power3.out" })
+    .to(S, { intro: 1, duration: reduce ? .2 : 2.6, ease: "power2.inOut", onUpdate: draw, onComplete: () => onScroll() }, .3);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Our Sky Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&family=IBM+Plex+Mono:wght@400&family=Jost:wght@300;400&display=swap">
+<style>
+/* Layout: a twinkling night behind a round star chart; the guest joins ten stars into a heart,
+   the date appears, and the invitation cards follow in one narrow column. One dark look. */
+:root {
+  --bg: #060914; --bg-2: #111a35; --fg: #e9eef9; --muted: #a3b0cc; --accent: #a9cbff; --on-accent: #08101f;
+  --line: rgba(169, 203, 255, .22); --card: rgba(10, 16, 36, .72); --field: rgba(255, 255, 255, .05); --radius: 14px;
+  --f-display: "Cormorant Garamond", Georgia, serif;
+  --f-body: "Jost", "Avenir Next", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: radial-gradient(90% 60% at 50% 30%, var(--bg-2) 0%, var(--bg) 75%) fixed, var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); overflow: hidden; }
+body.open { overflow-y: auto; }
+#night { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+.layer { position: relative; z-index: 1; }
+.wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.eyebrow { font: 400 .72rem/1.4 var(--f-body); letter-spacing: .32em; text-transform: uppercase; color: var(--accent); margin: 0; }
+
+.hero { min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; text-align: center; padding-block: 40px 28px; }
+.chart { width: min(340px, 88vw); height: auto; margin-top: 18px; overflow: visible; }
+.coords { font: 400 .7rem/1.4 var(--f-num); letter-spacing: .06em; color: var(--muted); margin: 10px 0 0; }
+.names { font: italic 500 clamp(2.6rem, 12vw, 3.4rem)/1.05 var(--f-display); margin: 22px 0 0; }
+.task { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: 20px; }
+.task p { margin: 0; color: var(--muted); }
+.bar { width: 220px; height: 3px; border-radius: 3px; background: rgba(169, 203, 255, .18); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+.progress { font: 400 .78rem var(--f-num); color: var(--accent); }
+.skip { appearance: none; border: 0; background: none; color: var(--muted); text-decoration: underline; font: 400 .82rem var(--f-body); min-height: 44px; cursor: pointer; }
+.reveal { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 20px; }
+.big-date { font: italic 400 clamp(2.4rem, 11vw, 3.2rem)/1 var(--f-display); color: var(--accent); }
+.cue { margin-top: 14px; font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+.star { cursor: pointer; outline: none; }
+.star:focus-visible .hit { stroke: #fff; stroke-width: 1.5; }
+
+section.s { padding-block: 3rem; text-align: center; }
+.s h2 { font: italic 400 clamp(2.2rem, 9vw, 2.9rem)/1.1 var(--f-display); margin: .4rem 0 1.4rem; text-wrap: balance; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 2.2rem 1.4rem; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.count div { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.count b { font: 400 clamp(1.6rem, 7vw, 2.2rem)/1 var(--f-num); font-variant-numeric: tabular-nums; }
+.count span, .form label { font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.venue-name { font: italic 500 1.8rem/1.2 var(--f-display); margin: 0; }
+.program { list-style: none; padding: 0; margin: 1.4rem auto 1.8rem; max-width: 19rem; text-align: left; }
+.program li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .8rem; padding-block: .65rem; border-bottom: 1px solid var(--line); }
+.program li:last-child { border-bottom: 0; }
+.program time { font-family: var(--f-num); font-size: .85rem; color: var(--accent); }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
+.btn { appearance: none; cursor: pointer; text-decoration: none; font: 400 .74rem/1 var(--f-body); letter-spacing: .2em; text-transform: uppercase; padding: 0 1.3rem; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--accent); color: var(--on-accent); background: var(--accent); }
+.btn.ghost { background: transparent; color: var(--fg); }
+.form { display: grid; gap: .8rem; text-align: left; margin-top: 1.4rem; }
+.field { width: 100%; box-sizing: border-box; font: 300 1rem/1.4 var(--f-body); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: .85rem 1rem; }
+.done { margin: 1.2rem 0 0; font: italic 400 1.6rem/1.3 var(--f-display); color: var(--accent); }
+footer { text-align: center; padding-block: 3rem 5rem; color: var(--muted); }
+footer .mono { font: italic 500 2.6rem/1 var(--f-display); color: var(--accent); }
+footer p { margin: .6rem 0 0; font: .72rem var(--f-num); letter-spacing: .2em; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<canvas id="night" aria-hidden="true"></canvas>
+
+<div class="layer">
+  <header class="hero wrap">
+    <p class="eyebrow">The sky on our wedding night</p>
+    <svg class="chart" id="chart" viewBox="0 0 350 350" role="group" aria-label="Star chart. Join the stars in order.">
+      <defs>
+        <radialGradient id="sg"><stop offset="0" stop-color="#ffffff"></stop><stop offset=".4" stop-color="#cfe0ff" stop-opacity=".85"></stop><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"></stop></radialGradient>
+      </defs>
+      <circle cx="175" cy="175" r="165" fill="#0a1024" stroke="#2c3b66" stroke-width="1"></circle>
+      <circle cx="175" cy="175" r="110" fill="none" stroke="#1e2a4d" stroke-width=".8" stroke-dasharray="2 4"></circle>
+      <circle cx="175" cy="175" r="55" fill="none" stroke="#1e2a4d" stroke-width=".8" stroke-dasharray="2 4"></circle>
+      <path d="M10 175 H340 M175 10 V340" stroke="#1e2a4d" stroke-width=".8"></path>
+      <g id="bgstars" fill="#c9d6f2"></g>
+      <path id="heartFill" fill="#a9cbff" opacity="0"></path>
+      <g id="lines" stroke="#a9cbff" stroke-width="1.5" stroke-linecap="round"></g>
+      <circle id="pulse" r="16" fill="none" stroke="#ffffff" stroke-width="1"></circle>
+      <g id="stars"></g>
+    </svg>
+    <p class="coords" id="coords">30.04° N · 31.24° E · 19.03.2027 · 19:00</p>
+    <h1 class="names"><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span></h1>
+
+    <div class="task" id="task">
+      <p>Tap the glowing star to join our stars</p>
+      <div class="bar"><i id="bar"></i></div>
+      <span class="progress" id="progress">0 of 10</span>
+      <button class="skip" id="skip" type="button">Join them for me</button>
+    </div>
+    <div class="reveal" id="reveal" hidden>
+      <span class="eyebrow">Save the night</span>
+      <span class="big-date" id="bigDate">19 · 03 · 2027</span>
+      <span class="muted" id="bigSub">The Garden Hall · 7 PM</span>
+      <span class="cue">Scroll</span>
+    </div>
+  </header>
+
+  <main id="content" hidden>
+    <section class="s"><div class="wrap"><div class="card">
+      <p class="eyebrow">Counting the nights</p>
+      <h2>Until our day</h2>
+      <div class="count" role="timer"><div><b id="cD">00</b><span>Days</span></div><div><b id="cH">00</b><span>Hours</span></div><div><b id="cM">00</b><span>Min</span></div><div><b id="cS">00</b><span>Sec</span></div></div>
+      <p class="muted" id="countNote" style="margin: 1.4rem 0 0">We can't wait to celebrate with you.</p>
+    </div></div></section>
+
+    <section class="s"><div class="wrap"><div class="card">
+      <p class="eyebrow">The celebration</p>
+      <h2>Where &amp; when</h2>
+      <p class="venue-name" data-k="venue">The Garden Hall</p>
+      <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+      <ul class="program" id="program"></ul>
+      <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
+    </div></div></section>
+
+    <section class="s"><div class="wrap"><div class="card">
+      <p class="eyebrow">RSVP</p>
+      <h2>Will you join us?</h2>
+      <p class="muted" style="margin: 0">Kindly reply by <span data-k="rsvpBy">5 March 2027</span>.</p>
+      <form class="form" id="rsvp">
+        <label for="guestName">Your name</label>
+        <input class="field" id="guestName" autocomplete="name" placeholder="e.g. Mariam Adel" required>
+        <label for="guestCount">Number of guests</label>
+        <select class="field" id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+        <div class="actions"><button class="btn" type="submit" value="yes">Joyfully accept</button><button class="btn ghost" type="submit" value="no">Regretfully decline</button></div>
+      </form>
+      <p class="done" id="rsvpDone" hidden></p>
+    </div></div></section>
+
+    <footer><div class="mono" id="mono">K &amp; E</div><p id="dShort">19 · 03 · 2027</p></footer>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ===== EDIT YOUR DETAILS HERE ===== */
+const CONFIG = {
+  name1: "Kareem", name2: "Esraa",
+  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  timeShort: "7 PM",
+  coords: "30.04° N · 31.24° E",
+  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapQuery: "Maadi Corniche, Cairo",
+  rsvpBy: "5 March 2027",
+  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
+};
+
+/* ===== shared invitation logic ===== */
+const $ = (s) => document.querySelector(s);
+const when = new Date(CONFIG.date);
+const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
+document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+const dShort = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/");
+$("#coords").textContent = `${CONFIG.coords} · ${dShort.join(".")} · ${fmt({ hour: "2-digit", minute: "2-digit", hour12: false })}`;
+$("#bigDate").textContent = dShort.join(" · ");
+$("#bigSub").textContent = `${CONFIG.venue} · ${CONFIG.timeShort}`;
+$("#dShort").textContent = dShort.join(" · ");
+$("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
+$("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
+$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+$("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
+  + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
+  + "&location=" + encodeURIComponent(CONFIG.venue + ", " + CONFIG.address);
+const pad = (n) => String(n).padStart(2, "0");
+function updateCount() {
+  const s = Math.floor((when - Date.now()) / 1000);
+  if (s <= 0) { $("#countNote").textContent = "Tonight is the night. Thank you for celebrating with us."; return; }
+  $("#cD").textContent = pad(Math.floor(s / 86400)); $("#cH").textContent = pad(Math.floor(s / 3600) % 24);
+  $("#cM").textContent = pad(Math.floor(s / 60) % 60); $("#cS").textContent = pad(s % 60);
+}
+updateCount(); setInterval(updateCount, 1000);
+$("#rsvp").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const yes = e.submitter ? e.submitter.value === "yes" : true;
+  const name = $("#guestName").value.trim(), n = $("#guestCount").value;
+  const done = $("#rsvpDone");
+  done.textContent = yes ? `See you under our stars, ${name}!` : `We'll miss you, ${name}.`;
+  done.hidden = false; e.target.hidden = true;
+  if (CONFIG.whatsapp) {
+    const msg = yes ? `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. We'll be there! Guests: ${n}` : `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. Sadly we can't make it, but we're sending our love.`;
+    const a = Object.assign(document.createElement("a"), { href: `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, target: "_blank", rel: "noopener", className: "btn", textContent: "Send on WhatsApp" });
+    a.style.marginTop = "1rem"; done.after(a);
+  }
+});
+
+/* ===== twinkling night (canvas) ===== */
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const cv = $("#night"), ctx = cv.getContext("2d");
+let night = [];
+function sizeNight() {
+  const dpr = Math.min(devicePixelRatio, 2);
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  night = Array.from({ length: Math.round(innerWidth * innerHeight / 3500) }, () => ({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: Math.random() * 1.2 + .2, p: Math.random() * 6.28, s: .5 + Math.random() * 2 }));
+}
+sizeNight(); addEventListener("resize", sizeNight);
+let shooting = null;
+gsap.ticker.add((t) => {
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  for (const s of night) {
+    ctx.globalAlpha = reduce ? .7 : .35 + .65 * Math.abs(Math.sin(t * s.s + s.p));
+    ctx.fillStyle = "#dbe6ff"; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
+  }
+  if (shooting) {
+    const k = (t - shooting.t0) / .9;
+    if (k > 1) shooting = null;
+    else {
+      const x = shooting.x + k * 260, y = shooting.y + k * 120;
+      const g = ctx.createLinearGradient(x - 90, y - 42, x, y); g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(255,255,255,.9)");
+      ctx.globalAlpha = 1 - k; ctx.strokeStyle = g; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x - 90, y - 42); ctx.lineTo(x, y); ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+});
+
+/* ===== the chart ===== */
+const NS = "http://www.w3.org/2000/svg";
+const mk = (tag, attrs, parent) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); parent && parent.appendChild(el); return el; };
+for (let i = 0; i < 70; i++) {
+  const a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * 158;
+  mk("circle", { cx: 175 + Math.cos(a) * r, cy: 175 + Math.sin(a) * r, r: (.4 + Math.random() * 1.2).toFixed(2), opacity: (.3 + Math.random() * .6).toFixed(2) }, $("#bgstars"));
+}
+const P = [[175, 130], [205, 95], [242, 102], [255, 138], [235, 180], [175, 245], [115, 180], [95, 138], [108, 102], [145, 95]];
+$("#heartFill").setAttribute("d", "M" + P.map((p) => p.join(" ")).join(" L") + " Z");
+const stars = P.map(([x, y], i) => {
+  const g = mk("g", { class: "star", tabindex: "0", role: "button", "aria-label": `Star ${i + 1}` }, $("#stars"));
+  mk("circle", { class: "hit", cx: x, cy: y, r: 20, fill: "transparent" }, g);
+  const glow = mk("circle", { cx: x, cy: y, r: 9, fill: "url(#sg)" }, g);
+  g.addEventListener("click", () => tapStar(i));
+  g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tapStar(i); } });
+  return { g, glow, x, y };
+});
+let next = 0, finished = false;
+const pulse = $("#pulse");
+const pulseTween = gsap.fromTo(pulse, { attr: { r: 10 }, opacity: .9 }, { attr: { r: 24 }, opacity: 0, duration: 1.3, repeat: -1, ease: "sine.out" });
+function movePulse() { if (next < P.length) gsap.set(pulse, { attr: { cx: P[next][0], cy: P[next][1] } }); }
+movePulse();
+
+function line(a, b, dur) {
+  const l = mk("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1] }, $("#lines"));
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  return gsap.fromTo(l, { attr: { "stroke-dasharray": len, "stroke-dashoffset": len } }, { attr: { "stroke-dashoffset": 0 }, duration: dur, ease: "power2.out" });
+}
+function tapStar(i) {
+  if (finished) return;
+  if (i !== next) { gsap.fromTo(stars[next].glow, { attr: { r: 9 } }, { attr: { r: 14 }, duration: .2, yoyo: true, repeat: 1 }); return; }
+  gsap.fromTo(stars[i].glow, { attr: { r: 16 } }, { attr: { r: 11 }, duration: .6, ease: "elastic.out(1,.4)" });
+  if (i > 0) line(P[i - 1], P[i], reduce ? .05 : .5);
+  next++;
+  gsap.to("#bar", { width: (next / P.length) * 100 + "%", duration: .4 });
+  $("#progress").textContent = `${next} of ${P.length}`;
+  movePulse();
+  if (next === P.length) finale();
+}
+$("#skip").addEventListener("click", () => {
+  const tl = gsap.timeline();
+  for (let i = next; i < P.length; i++) tl.add(() => tapStar(i), (i - next) * (reduce ? .02 : .28));
+});
+
+function finale() {
+  finished = true; pulseTween.kill(); gsap.set(pulse, { opacity: 0 });
+  const k = reduce ? .3 : 1;
+  const tl = gsap.timeline();
+  tl.add(line(P[P.length - 1], P[0], .6 * k), .3 * k)
+    .to("#heartFill", { opacity: .16, duration: 1.2 * k }, .8 * k)
+    .to(stars.map((s) => s.glow), { attr: { r: 13 }, duration: .4, yoyo: true, repeat: 1, stagger: .05 }, .8 * k)
+    .add(() => { shooting = { x: innerWidth * .1, y: innerHeight * .1, t0: gsap.ticker.time }; }, 1 * k)
+    .to("#task", { opacity: 0, y: 10, duration: .4 }, 1.2 * k)
+    .add(() => {
+      $("#task").hidden = true; $("#reveal").hidden = false; $("#content").hidden = false; document.body.classList.add("open");
+      gsap.from("#reveal > *", { y: 16, opacity: 0, duration: .8, stagger: .12, ease: "power3.out" });
+    }, 1.6 * k);
+}
+gsap.from(".hero > *", { y: 20, opacity: 0, duration: 1, stagger: .1, ease: "power3.out" });
+gsap.from("#stars .star", { opacity: 0, scale: 0, transformOrigin: "50% 50%", duration: .6, stagger: .06, delay: .6 });
+</script>
+</body>
+</html>

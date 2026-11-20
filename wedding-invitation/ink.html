@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ink Calligraphy Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Marcellus&family=Noto+Naskh+Arabic:wght@400;500&family=Jost:wght@300;400&display=swap">
+<style>
+/* Layout: stone-paper ground; ink drops fall and bloom, the names write themselves in Ruqaa
+   calligraphy with English beneath, then bilingual cards follow (Arabic first, English toggle). One light look. */
+:root {
+  --bg: #e8e5df; --fg: #141414; --muted: #5a544d; --accent: #8a6722; --gold: #b8913a; --on-accent: #ffffff;
+  --line: rgba(20, 20, 20, .14); --card: rgba(255, 255, 255, .55); --field: rgba(255, 255, 255, .8); --radius: 2px;
+  --f-cal: "Aref Ruqaa", "Noto Naskh Arabic", serif;
+  --f-latin: "Marcellus", "Optima", Georgia, serif;
+  --f-body: "Jost", "Avenir Next", system-ui, sans-serif;
+  --f-ar: "Noto Naskh Arabic", "Geeza Pro", serif;
+  --f-display: var(--f-cal); --f-text: var(--f-ar);
+  color-scheme: light;
+}
+:root[lang="en"] { --f-display: var(--f-latin); --f-text: var(--f-body); }
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font: 400 16px/1.7 var(--f-text); }
+
+.lang { position: fixed; z-index: 5; top: calc(env(safe-area-inset-top, 0px) + 12px); right: max(12px, env(safe-area-inset-right, 0px)); display: flex; gap: 4px; background: rgba(255, 255, 255, .7); border: 1px solid var(--line); border-radius: 999px; padding: 4px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.lang button { appearance: none; border: 0; background: transparent; color: var(--fg); min-height: 36px; min-width: 52px; border-radius: 999px; cursor: pointer; font: 400 .9rem/1 var(--f-body); }
+.lang button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.lang button:first-child { font-family: var(--f-cal); font-size: 1.05rem; }
+
+.hero { position: relative; min-height: 100svh; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-block: 72px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.ink { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hero > *:not(.ink) { position: relative; }
+.invite-ar { font: 400 1.25rem/1.6 var(--f-cal); color: var(--muted); margin: 0; }
+.cal { font: 700 clamp(3rem, 15vw, 6rem)/1.2 var(--f-cal); margin: .4rem 0 0; padding-inline: .2em; white-space: nowrap; }
+.latin { font: 400 clamp(1.1rem, 5vw, 1.4rem)/1.3 var(--f-latin); letter-spacing: .2em; text-transform: uppercase; margin: .4rem 0 0; }
+.rule { width: 44px; height: 1px; background: var(--gold); margin: 1.2rem 0; }
+.date-ar { font: 400 1.35rem/1.5 var(--f-cal); margin: 0; }
+.date-en { font: 400 .76rem/1.4 var(--f-body); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: .3rem 0 0; }
+
+.wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+section.s { padding-block: 3rem; text-align: center; }
+.eyebrow { font: 400 .95rem/1.4 var(--f-text); color: var(--accent); margin: 0; }
+:root[lang="en"] .eyebrow { font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; }
+.s h2 { font: 400 clamp(2.1rem, 9vw, 2.8rem)/1.3 var(--f-display); margin: .3rem 0 1.4rem; text-wrap: balance; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 2.2rem 1.4rem; }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.count div { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.count b { font: 400 clamp(2rem, 9vw, 2.6rem)/1.1 var(--f-latin); font-variant-numeric: tabular-nums; }
+.count span, .form label { font-size: .85rem; color: var(--muted); }
+:root[lang="en"] .count span, :root[lang="en"] .form label { font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; }
+.muted { color: var(--muted); }
+.venue-name { font: 400 1.8rem/1.3 var(--f-display); margin: 0; }
+.program { list-style: none; padding: 0; margin: 1.4rem auto 1.8rem; max-width: 19rem; text-align: start; }
+.program li { display: grid; grid-template-columns: 5.6rem 1fr; gap: .8rem; padding-block: .6rem; border-bottom: 1px solid var(--line); }
+.program li:last-child { border-bottom: 0; }
+.program time { color: var(--accent); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
+.btn { appearance: none; cursor: pointer; text-decoration: none; font: 400 .95rem/1 var(--f-text); padding: 0 1.4rem; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--fg); color: var(--bg); background: var(--fg); }
+:root[lang="en"] .btn { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; }
+.btn.ghost { background: transparent; color: var(--fg); }
+.form { display: grid; gap: .7rem; text-align: start; margin-top: 1.4rem; }
+.field { width: 100%; box-sizing: border-box; font: 400 1rem/1.4 var(--f-text); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 2px; padding: .85rem 1rem; }
+.done { margin: 1.2rem 0 0; font: 400 1.6rem/1.4 var(--f-display); color: var(--accent); }
+footer { text-align: center; padding-block: 3rem 5rem; color: var(--muted); }
+footer .mono { font: 700 2.6rem/1.2 var(--f-cal); color: var(--fg); }
+footer p { margin: .4rem 0 0; letter-spacing: .3em; font: .72rem var(--f-body); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<div class="lang" role="group" aria-label="Language">
+  <button type="button" data-lang="ar" aria-pressed="true">عربي</button>
+  <button type="button" data-lang="en" aria-pressed="false">EN</button>
+</div>
+
+<header class="hero">
+  <svg class="ink" id="ink" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <filter id="bleed" x="-40%" y="-40%" width="180%" height="180%">
+        <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"></feTurbulence>
+        <feDisplacementMap id="disp" in="SourceGraphic" scale="50"></feDisplacementMap>
+        <feGaussianBlur stdDeviation="2.4"></feGaussianBlur>
+      </filter>
+      <radialGradient id="inkfill"><stop offset="0" stop-color="#0d0d0d" stop-opacity=".92"></stop><stop offset=".65" stop-color="#262626" stop-opacity=".35"></stop><stop offset="1" stop-color="#262626" stop-opacity="0"></stop></radialGradient>
+      <radialGradient id="leaf"><stop offset="0" stop-color="#ecd08a"></stop><stop offset="1" stop-color="#a77f2c"></stop></radialGradient>
+    </defs>
+    <g filter="url(#bleed)">
+      <circle class="blot" cx="318" cy="170" r="96" fill="url(#inkfill)" opacity=".55"></circle>
+      <circle class="blot" cx="70" cy="330" r="64" fill="url(#inkfill)" opacity=".38"></circle>
+      <circle class="blot" cx="270" cy="660" r="130" fill="url(#inkfill)" opacity=".26"></circle>
+      <circle class="blot" cx="110" cy="560" r="40" fill="url(#inkfill)" opacity=".3"></circle>
+    </g>
+    <circle class="drop" cx="318" cy="170" r="6" fill="#111"></circle>
+    <circle class="drop" cx="70" cy="330" r="5" fill="#111"></circle>
+    <circle class="drop" cx="270" cy="660" r="7" fill="#111"></circle>
+    <circle class="drop" cx="110" cy="560" r="4" fill="#111"></circle>
+    <circle id="goldring" cx="200" cy="370" r="118" fill="none" stroke="#b8913a" stroke-width="1.2" opacity=".85"></circle>
+    <g id="dust" fill="url(#leaf)"></g>
+  </svg>
+
+  <p class="invite-ar h" dir="rtl">بكل الحب ندعوكم لحضور زفاف</p>
+  <h1 class="cal" id="cal" dir="rtl">كريم و إسراء</h1>
+  <p class="latin h" lang="en"><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span></p>
+  <div class="rule h"></div>
+  <p class="date-ar h" dir="rtl" id="dateAr">الجمعة ١٩ مارس ٢٠٢٧</p>
+  <p class="date-en h" lang="en" id="dateEn">Friday · 19 March 2027 · 7 PM</p>
+</header>
+
+<main>
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow" data-i="countEyebrow"></p>
+    <h2 data-i="countTitle"></h2>
+    <div class="count" role="timer"><div><b id="cD">00</b><span data-i="days"></span></div><div><b id="cH">00</b><span data-i="hours"></span></div><div><b id="cM">00</b><span data-i="minutes"></span></div><div><b id="cS">00</b><span data-i="seconds"></span></div></div>
+    <p class="muted" id="countNote" data-i="countNote" style="margin: 1.4rem 0 0"></p>
+  </div></div></section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow" data-i="venueEyebrow"></p>
+    <h2 data-i="venueTitle"></h2>
+    <p class="venue-name" data-c="venue"></p>
+    <p class="muted" data-c="address" style="margin: .3rem 0 0"></p>
+    <ul class="program" id="program"></ul>
+    <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener" data-i="directions"></a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener" data-i="calendar"></a></div>
+  </div></div></section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow" data-i="rsvpEyebrow"></p>
+    <h2 data-i="rsvpTitle"></h2>
+    <p class="muted" style="margin: 0"><span data-i="replyBy"></span> <span data-c="rsvpBy"></span></p>
+    <form class="form" id="rsvp">
+      <label for="guestName" data-i="yourName"></label>
+      <input class="field" id="guestName" autocomplete="name" required>
+      <label for="guestCount" data-i="guests"></label>
+      <select class="field" id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+      <div class="actions"><button class="btn" type="submit" value="yes" data-i="accept"></button><button class="btn ghost" type="submit" value="no" data-i="decline"></button></div>
+    </form>
+    <p class="done" id="rsvpDone" hidden></p>
+  </div></div></section>
+
+  <footer><div class="mono" id="mono">ك و إ</div><p id="dShort">19 · 03 · 2027</p></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ===== EDIT YOUR DETAILS HERE (Arabic + English) ===== */
+const CONFIG = {
+  name1: "Kareem", name2: "Esraa",
+  name1Ar: "كريم", name2Ar: "إسراء",
+  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  venue: { ar: "قاعة الحديقة", en: "The Garden Hall" },
+  address: { ar: "كورنيش النيل، المعادي، القاهرة", en: "Nile Corniche, Maadi, Cairo" },
+  mapQuery: "Maadi Corniche, Cairo",
+  rsvpBy: { ar: "٥ مارس ٢٠٢٧", en: "5 March 2027" },
+  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  program: [
+    { time: { ar: "٧:٠٠ م", en: "7:00 PM" }, ar: "استقبال الضيوف", en: "Guests arrive" },
+    { time: { ar: "٨:٠٠ م", en: "8:00 PM" }, ar: "الزفة وكتب الكتاب", en: "Zaffa & ceremony" },
+    { time: { ar: "٩:٣٠ م", en: "9:30 PM" }, ar: "العشاء والاحتفال", en: "Dinner & dancing" }
+  ]
+};
+const T = {
+  ar: { countEyebrow: "العد التنازلي", countTitle: "حتى يوم فرحنا", days: "يوم", hours: "ساعة", minutes: "دقيقة", seconds: "ثانية",
+        countNote: "في انتظاركم لنحتفل معًا.", countDone: "اليوم يوم فرحنا. شكرًا لمشاركتكم.",
+        venueEyebrow: "مكان الحفل", venueTitle: "أين ومتى", directions: "الاتجاهات", calendar: "أضف للتقويم",
+        rsvpEyebrow: "تأكيد الحضور", rsvpTitle: "هل ستشاركوننا؟", replyBy: "برجاء الرد قبل", yourName: "الاسم", guests: "عدد الحضور",
+        accept: "سأحضر بكل سرور", decline: "أعتذر عن الحضور", namePh: "مثال: مريم عادل",
+        thanksYes: (n) => `في انتظارك يا ${n}!`, thanksNo: (n) => `سنفتقدك يا ${n}.`, wa: "أرسل على واتساب" },
+  en: { countEyebrow: "The countdown", countTitle: "Until our day", days: "Days", hours: "Hours", minutes: "Minutes", seconds: "Seconds",
+        countNote: "We can't wait to celebrate with you.", countDone: "The day is here. Thank you for celebrating with us.",
+        venueEyebrow: "The celebration", venueTitle: "Where & when", directions: "Get directions", calendar: "Add to calendar",
+        rsvpEyebrow: "RSVP", rsvpTitle: "Will you join us?", replyBy: "Kindly reply by", yourName: "Your name", guests: "Number of guests",
+        accept: "Joyfully accept", decline: "Regretfully decline", namePh: "e.g. Mariam Adel",
+        thanksYes: (n) => `See you there, ${n}!`, thanksNo: (n) => `We'll miss you, ${n}.`, wa: "Send on WhatsApp" }
+};
+
+/* ===== shared invitation logic ===== */
+const $ = (s) => document.querySelector(s);
+const when = new Date(CONFIG.date);
+const fmt = (loc, o) => new Intl.DateTimeFormat(loc, { timeZone: CONFIG.timeZone, ...o }).format(when);
+let lang = "ar";
+try { lang = localStorage.getItem("inviteLang") || "ar"; } catch (e) {}
+
+document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+$("#cal").textContent = `${CONFIG.name1Ar} و ${CONFIG.name2Ar}`;
+$("#mono").textContent = `${CONFIG.name1Ar[0]} و ${CONFIG.name2Ar[0]}`;
+$("#dateAr").textContent = fmt("ar-EG", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+$("#dateEn").textContent = fmt("en-GB", { weekday: "long" }) + " · " + fmt("en-GB", { day: "numeric", month: "long", year: "numeric" }) + " · " + CONFIG.program[0].time.en;
+$("#dShort").textContent = fmt("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
+$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+$("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
+  + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
+  + "&location=" + encodeURIComponent(CONFIG.venue.en + ", " + CONFIG.address.en);
+
+function applyLang(l) {
+  lang = l;
+  try { localStorage.setItem("inviteLang", l); } catch (e) {}
+  document.documentElement.lang = l; document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-i]").forEach((el) => { el.textContent = T[l][el.dataset.i]; });
+  document.querySelectorAll("[data-c]").forEach((el) => { el.textContent = CONFIG[el.dataset.c][l]; });
+  $("#program").innerHTML = CONFIG.program.map((p) => `<li><time>${p.time[l]}</time><span>${p[l]}</span></li>`).join("");
+  $("#guestName").placeholder = T[l].namePh;
+  document.querySelectorAll(".lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
+  updateCount();
+}
+document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => applyLang(b.dataset.lang)));
+
+const digits = (n) => { const s = String(n).padStart(2, "0"); return lang === "ar" ? s.replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]) : s; };
+function updateCount() {
+  const s = Math.floor((when - Date.now()) / 1000);
+  if (s <= 0) { $("#countNote").textContent = T[lang].countDone; return; }
+  $("#cD").textContent = digits(Math.floor(s / 86400)); $("#cH").textContent = digits(Math.floor(s / 3600) % 24);
+  $("#cM").textContent = digits(Math.floor(s / 60) % 60); $("#cS").textContent = digits(s % 60);
+}
+applyLang(lang); setInterval(updateCount, 1000);
+
+$("#rsvp").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const yes = e.submitter ? e.submitter.value === "yes" : true;
+  const name = $("#guestName").value.trim(), n = $("#guestCount").value;
+  const done = $("#rsvpDone");
+  done.textContent = yes ? T[lang].thanksYes(name) : T[lang].thanksNo(name);
+  done.hidden = false; e.target.hidden = true;
+  if (CONFIG.whatsapp) {
+    const msg = yes ? `أهلاً ${CONFIG.name1Ar} و ${CONFIG.name2Ar}، أنا ${name}. سأحضر إن شاء الله. العدد: ${n}` : `أهلاً ${CONFIG.name1Ar} و ${CONFIG.name2Ar}، أنا ${name}. أعتذر عن الحضور، ألف مبروك!`;
+    const a = Object.assign(document.createElement("a"), { href: `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, target: "_blank", rel: "noopener", className: "btn", textContent: T[lang].wa });
+    a.style.marginTop = "1rem"; done.after(a);
+  }
+});
+
+/* ===== the ink moment ===== */
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const dust = $("#dust");
+for (let i = 0; i < 26; i++) {
+  const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  c.setAttribute("cx", 40 + Math.random() * 320); c.setAttribute("cy", 220 + Math.random() * 360); c.setAttribute("r", .8 + Math.random() * 2);
+  dust.appendChild(c);
+}
+const k = reduce ? .3 : 1;
+const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+tl.from(".drop", { attr: { cy: -40 }, duration: .7 * k, ease: "power2.in", stagger: .22 * k })
+  .to(".drop", { opacity: 0, duration: .15, stagger: .22 * k }, .65 * k)
+  .from(".blot", { scale: 0, transformOrigin: "50% 50%", duration: 1.6 * k, stagger: .22 * k, ease: "expo.out" }, .65 * k)
+  .from("#disp", { attr: { scale: 140 }, duration: 2.4 * k, ease: "power3.out" }, .65 * k)
+  .from(".invite-ar", { opacity: 0, y: 12, duration: .8 * k }, 1.1 * k)
+  .from("#goldring", { attr: { r: 40 }, opacity: 0, duration: 1.4 * k, ease: "expo.out" }, 1.2 * k)
+  .fromTo("#cal", { clipPath: "inset(0 0 0 100%)" }, { clipPath: "inset(0 0 0 0%)", duration: 2 * k, ease: "power1.inOut" }, 1.4 * k)
+  .from(".latin", { clipPath: "inset(0 100% 0 0)", duration: 1.2 * k, ease: "power1.inOut" }, 2.9 * k)
+  .from(".rule, .date-ar, .date-en", { opacity: 0, y: 10, duration: .7 * k, stagger: .12 * k }, 3.3 * k)
+  .from("#dust circle", { opacity: 0, scale: 0, transformOrigin: "50% 50%", duration: .8, stagger: { each: .03, from: "random" } }, 2.2 * k);
+if (!reduce) {
+  gsap.utils.toArray("#dust circle").forEach((c) => gsap.to(c, { attr: { cy: "-=" + (20 + Math.random() * 40) }, duration: 4 + Math.random() * 4, yoyo: true, repeat: -1, ease: "sine.inOut", delay: Math.random() * 2 }));
+  gsap.to("#turb", { attr: { baseFrequency: .026 }, duration: 6, yoyo: true, repeat: -1, ease: "sine.inOut" });
+}
+</script>
+</body>
+</html>

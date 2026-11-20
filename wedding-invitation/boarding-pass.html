@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Boarding Pass Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400&family=Space+Mono:wght@400;700&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* Layout: one airline boarding pass centred on a pale-sky ground; drag the RSVP stub to tear it,
+   a plane crosses, and the rest of the invitation unfolds as airline-styled cards. One light look. */
+:root {
+  --bg: #cfe1ee; --fg: #1b2a41; --muted: #4a5c72; --accent: #c4472b; --on-accent: #ffffff;
+  --line: rgba(27, 42, 65, .16); --card: #ffffff; --field: #f2f6f9; --radius: 20px;
+  --f-display: "Fraunces", Georgia, serif;
+  --f-body: "Jost", "Avenir Next", system-ui, sans-serif;
+  --f-num: "Space Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); overflow: hidden; }
+body.open { overflow-y: auto; }
+
+.stage { min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 18px;
+  padding-block: 40px 28px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); position: relative; overflow: hidden; }
+.eyebrow { font: 400 .72rem/1.4 var(--f-body); letter-spacing: .32em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.pass { width: 100%; max-width: 360px; background: var(--card); border-radius: var(--radius); box-shadow: 0 18px 40px rgba(27, 42, 65, .18); display: flex; flex-direction: column; }
+.pass-main { padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 18px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.mono { font-family: var(--f-num); }
+.route { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.code { font: 700 2.4rem/1 var(--f-num); }
+.small { font-size: .78rem; color: var(--muted); }
+.names { margin: 0; font: italic 400 1.9rem/1.15 var(--f-display); text-wrap: balance; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 10px; }
+.fld { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fld span { font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.fld b { font: 400 .9rem/1.3 var(--f-num); overflow-wrap: anywhere; }
+.full { grid-column: 1 / -1; }
+.perf { position: relative; height: 24px; display: flex; align-items: center; }
+.perf::before, .perf::after { content: ""; position: absolute; width: 24px; height: 24px; border-radius: 50%; background: var(--bg); }
+.perf::before { left: -12px; } .perf::after { right: -12px; }
+.perf i { flex: 1; margin: 0 20px; border-top: 2px dashed #b7c5d2; }
+.stub { padding: 16px 22px 22px; display: flex; flex-direction: column; gap: 12px; background: var(--card); border-radius: 0 0 var(--radius) var(--radius); cursor: grab; touch-action: none; position: relative; z-index: 2; }
+.stub:active { cursor: grabbing; }
+.barcode { height: 42px; background: repeating-linear-gradient(90deg, var(--fg) 0 2px, transparent 2px 4px, var(--fg) 4px 7px, transparent 7px 9px, var(--fg) 9px 10px, transparent 10px 13px); }
+.hint { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.hint span { font-size: .74rem; letter-spacing: .24em; text-transform: uppercase; }
+.linkbtn { appearance: none; border: 0; background: none; color: var(--muted); font: 400 .8rem var(--f-body); text-decoration: underline; cursor: pointer; min-height: 44px; }
+.plane { position: absolute; top: 18%; left: -60px; width: 46px; opacity: 0; color: var(--fg); }
+.toast { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); font: italic 400 1.6rem/1.2 var(--f-display); white-space: nowrap; opacity: 0; }
+
+.content { position: relative; }
+.wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+section.s { padding-block: 2.5rem; text-align: center; }
+.s h2 { font: italic 400 clamp(2rem, 8vw, 2.6rem)/1.15 var(--f-display); margin: .4rem 0 1.4rem; text-wrap: balance; }
+.card { background: var(--card); border-radius: var(--radius); padding: 2rem 1.4rem; box-shadow: 0 10px 30px rgba(27, 42, 65, .1); }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.count div { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.count b { font: 700 clamp(1.6rem, 7vw, 2.2rem)/1 var(--f-num); font-variant-numeric: tabular-nums; }
+.count span, .form label { font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.venue-name { font: italic 400 1.6rem/1.2 var(--f-display); margin: 0; }
+.program { list-style: none; padding: 0; margin: 1.4rem auto 1.8rem; max-width: 19rem; text-align: left; }
+.program li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .8rem; padding-block: .65rem; border-bottom: 1px dashed var(--line); }
+.program li:last-child { border-bottom: 0; }
+.program time { font-family: var(--f-num); color: var(--accent); font-size: .9rem; }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
+.btn { appearance: none; cursor: pointer; text-decoration: none; font: 500 .74rem/1 var(--f-body); letter-spacing: .18em; text-transform: uppercase; padding: 0 1.3rem; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--accent); color: var(--on-accent); background: var(--accent); }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--fg); }
+.form { display: grid; gap: .8rem; text-align: left; margin-top: 1.4rem; }
+.field { width: 100%; box-sizing: border-box; font: 400 1rem/1.4 var(--f-body); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: .85rem 1rem; }
+.done { margin: 1.2rem 0 0; font: italic 400 1.5rem/1.3 var(--f-display); color: var(--accent); }
+footer { text-align: center; padding-block: 2.5rem 4rem; color: var(--muted); }
+footer .code { color: var(--fg); }
+footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <p class="eyebrow">You're cleared for boarding</p>
+  <div class="pass" id="pass">
+    <div class="pass-main">
+      <div class="row"><span class="mono" style="font-weight: 700; font-size: .78rem; letter-spacing: .1em" id="airline">KE AIRWAYS</span><span class="mono" style="font-size: .78rem; color: var(--accent)" id="flight">FLIGHT KE1903</span></div>
+      <div class="route">
+        <div class="fld"><b class="code">ONE</b><span style="letter-spacing: 0; text-transform: none; font-size: .78rem">Two single hearts</span></div>
+        <svg width="54" height="24" viewBox="0 0 54 24" aria-hidden="true"><path d="M2 12 H44" stroke="#1b2a41" stroke-width="1.5" stroke-dasharray="3 4"></path><path d="M40 5 L52 12 L40 19" fill="none" stroke="#c4472b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <div class="fld" style="align-items: flex-end"><b class="code">4EVR</b><span style="letter-spacing: 0; text-transform: none; font-size: .78rem">Forever</span></div>
+      </div>
+      <h1 class="names"><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span> are getting married</h1>
+      <div class="grid3">
+        <div class="fld"><span>Date</span><b id="pDate">19 MAR 27</b></div>
+        <div class="fld"><span>Boarding</span><b id="pTime">19:00</b></div>
+        <div class="fld"><span>Seat</span><b>NEXT TO US</b></div>
+        <div class="fld full"><span>Gate</span><b id="pGate">THE GARDEN HALL, MAADI</b></div>
+      </div>
+    </div>
+    <div class="perf" aria-hidden="true"><i></i></div>
+    <div class="stub" id="stub">
+      <div class="row" style="align-items: flex-end"><div class="fld"><span>Passenger</span><b>YOU</b></div><span class="mono" style="font-size: .72rem; color: var(--accent)">RSVP STUB</span></div>
+      <div class="barcode" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="hint" id="hint">
+    <svg width="22" height="34" viewBox="0 0 22 34" aria-hidden="true"><path d="M11 2 V30 M3 22 L11 30 L19 22" fill="none" stroke="#1b2a41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <span>Drag the stub down to tear</span>
+    <button class="linkbtn" id="tearBtn" type="button">or tap here</button>
+  </div>
+  <svg class="plane" id="plane" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"></path></svg>
+  <p class="toast" id="toast">Have a lovely flight</p>
+</div>
+
+<main class="content" id="content" hidden>
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">Departure in</p>
+    <h2>Boarding soon</h2>
+    <div class="count" role="timer"><div><b id="cD">00</b><span>Days</span></div><div><b id="cH">00</b><span>Hours</span></div><div><b id="cM">00</b><span>Min</span></div><div><b id="cS">00</b><span>Sec</span></div></div>
+    <p class="muted" id="countNote" style="margin: 1.4rem 0 0">We can't wait to celebrate with you.</p>
+  </div></div></section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">Gate information</p>
+    <h2>Where we take off</h2>
+    <p class="venue-name" data-k="venue">The Garden Hall</p>
+    <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+    <ul class="program" id="program"></ul>
+    <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
+  </div></div></section>
+
+  <section class="s" id="checkin"><div class="wrap"><div class="card">
+    <p class="eyebrow">Check-in</p>
+    <h2>Confirm your seat</h2>
+    <p class="muted" style="margin: 0">Kindly reply by <span data-k="rsvpBy">5 March 2027</span>.</p>
+    <form class="form" id="rsvp">
+      <label for="guestName">Passenger name</label>
+      <input class="field" id="guestName" autocomplete="name" placeholder="e.g. Mariam Adel" required>
+      <label for="guestCount">Number of seats</label>
+      <select class="field" id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+      <div class="actions"><button class="btn" type="submit" value="yes">Confirm my seat</button><button class="btn ghost" type="submit" value="no">I can't fly</button></div>
+    </form>
+    <p class="done" id="rsvpDone" hidden></p>
+  </div></div></section>
+
+  <footer><div class="code" id="mono">K &amp; E</div><p id="dShort">19 · 03 · 2027</p></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+<script>
+/* ===== EDIT YOUR DETAILS HERE ===== */
+const CONFIG = {
+  name1: "Kareem", name2: "Esraa",
+  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapQuery: "Maadi Corniche, Cairo",
+  gateShort: "The Garden Hall, Maadi",
+  rsvpBy: "5 March 2027",
+  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
+};
+
+/* ===== shared invitation logic ===== */
+const $ = (s) => document.querySelector(s);
+const when = new Date(CONFIG.date);
+const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
+document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+const initials = CONFIG.name1[0].toUpperCase() + CONFIG.name2[0].toUpperCase();
+$("#airline").textContent = initials + " AIRWAYS";
+$("#flight").textContent = "FLIGHT " + initials + fmt({ day: "2-digit" }) + fmt({ month: "2-digit" });
+$("#pDate").textContent = fmt({ day: "2-digit", month: "short", year: "2-digit" }).toUpperCase();
+$("#pTime").textContent = fmt({ hour: "2-digit", minute: "2-digit", hour12: false });
+$("#pGate").textContent = CONFIG.gateShort.toUpperCase();
+$("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
+$("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
+$("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
+$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+$("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
+  + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
+  + "&location=" + encodeURIComponent(CONFIG.venue + ", " + CONFIG.address);
+const pad = (n) => String(n).padStart(2, "0");
+function updateCount() {
+  const s = Math.floor((when - Date.now()) / 1000);
+  if (s <= 0) { $("#countNote").textContent = "Today is the day. Thank you for flying with us."; return; }
+  $("#cD").textContent = pad(Math.floor(s / 86400)); $("#cH").textContent = pad(Math.floor(s / 3600) % 24);
+  $("#cM").textContent = pad(Math.floor(s / 60) % 60); $("#cS").textContent = pad(s % 60);
+}
+updateCount(); setInterval(updateCount, 1000);
+$("#rsvp").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const yes = e.submitter ? e.submitter.value === "yes" : true;
+  const name = $("#guestName").value.trim(), n = $("#guestCount").value;
+  const done = $("#rsvpDone");
+  done.textContent = yes ? `Seat confirmed. See you on board, ${name}!` : `We'll miss you on board, ${name}.`;
+  done.hidden = false; e.target.hidden = true;
+  if (CONFIG.whatsapp) {
+    const msg = yes ? `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. We'll be there! Guests: ${n}` : `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. Sadly we can't make it, but we're sending our love.`;
+    const a = Object.assign(document.createElement("a"), { href: `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, target: "_blank", rel: "noopener", className: "btn", textContent: "Send on WhatsApp" });
+    a.style.marginTop = "1rem"; done.after(a);
+  }
+});
+
+/* ===== the tear ===== */
+gsap.registerPlugin(Draggable);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+gsap.from("#pass", { y: 40, opacity: 0, rotation: -2, duration: 1, ease: "power3.out" });
+gsap.to("#hint svg", { y: 8, duration: .8, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+let torn = false;
+const drag = Draggable.create("#stub", {
+  type: "y", bounds: { minY: 0, maxY: 260 },
+  onDrag() { gsap.set(this.target, { rotation: this.y * .05, transformOrigin: "0% 0%" }); },
+  onRelease() { if (this.y > 80) tear(); else gsap.to(this.target, { y: 0, rotation: 0, duration: .7, ease: "elastic.out(1, .45)" }); }
+})[0];
+$("#tearBtn").addEventListener("click", tear);
+
+function tear() {
+  if (torn) return; torn = true;
+  drag.disable();
+  const k = reduce ? .4 : 1;
+  const tl = gsap.timeline();
+  tl.to("#stub", { y: "+=" + innerHeight, x: 70, rotation: 24, duration: 1 * k, ease: "power2.in" })
+    .to("#hint", { opacity: 0, duration: .3 }, 0)
+    .to("#pass", { y: -10, rotation: 1.5, duration: .25, yoyo: true, repeat: 1, ease: "power1.out" }, 0)
+    .to("#plane", { opacity: 1, duration: .2 }, .5 * k)
+    .to("#plane", { x: innerWidth + 140, y: -60, rotation: 90, duration: 1.6 * k, ease: "power1.inOut" }, .5 * k)
+    .fromTo("#toast", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .6 }, .9 * k)
+    .add(() => {
+      $("#content").hidden = false; document.body.classList.add("open");
+      gsap.from("#content .card", { y: 50, opacity: 0, duration: .9, stagger: .15, ease: "power3.out" });
+    }, 1.5 * k)
+    .add(() => $("#content").scrollIntoView({ behavior: reduce ? "auto" : "smooth" }), 2.4 * k);
+}
+</script>
+</body>
+</html>

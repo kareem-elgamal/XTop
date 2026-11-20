@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lantern Night Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* Layout: fixed Three.js sky of rising paper lanterns; a press-and-hold releases the first,
+   then a single narrow column of invitation cards scrolls over the glowing sky. One dark look. */
+:root {
+  --bg: #0f1030; --bg-2: #241c4a; --bg-3: #3a2552;
+  --fg: #fff3df; --muted: #c9bddf; --accent: #ffb54d; --on-accent: #2a1606;
+  --line: rgba(255, 181, 77, .3); --card: rgba(18, 16, 46, .66); --field: rgba(255, 255, 255, .06);
+  --radius: 18px;
+  --f-display: "Marcellus", "Optima", Georgia, serif;
+  --f-body: "Jost", "Futura", "Avenir Next", system-ui, sans-serif;
+  --f-num: "Marcellus", Georgia, serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 55%, var(--bg-3) 100%) fixed, var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); overflow: hidden; }
+body.open { overflow-y: auto; }
+#sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+
+.intro { position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12vh); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 7vh);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.intro h1 { font: 400 clamp(2.4rem, 10vw, 3.6rem)/1.1 var(--f-display); letter-spacing: .03em; margin: .5rem 0 0; }
+.hold { display: flex; flex-direction: column; align-items: center; gap: .9rem; }
+.hold-btn { position: relative; width: 92px; height: 92px; border-radius: 50%; border: 0; cursor: pointer; background: radial-gradient(circle at 50% 60%, #fff2c2, var(--accent) 45%, #d2602a); box-shadow: 0 0 50px rgba(255, 181, 77, .55); touch-action: none; -webkit-user-select: none; user-select: none; }
+.hold-btn svg { position: absolute; inset: -10px; width: 112px; height: 112px; transform: rotate(-90deg); }
+.hold-label { font: 400 .74rem/1 var(--f-body); letter-spacing: .26em; text-transform: uppercase; color: var(--fg); }
+.hold-sub { font-size: .8rem; color: var(--muted); margin: 0; }
+
+.eyebrow { font: 400 .72rem/1.4 var(--f-body); letter-spacing: .32em; text-transform: uppercase; color: var(--accent); margin: 0; }
+.content { position: relative; z-index: 1; }
+.wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.hero { min-height: 100svh; box-sizing: border-box; padding-top: 34svh; padding-bottom: 3rem; text-align: center; }
+.hero h1 { font: 400 clamp(2.8rem, 12vw, 4.4rem)/1.05 var(--f-display); margin: .8rem 0; letter-spacing: .02em; text-wrap: balance; }
+.hero h1 .amp { color: var(--accent); }
+.lede { color: var(--muted); max-width: 26rem; margin: 0 auto; text-wrap: balance; }
+.date { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin: 2rem auto .6rem; max-width: 22rem; }
+.date .side { font-size: .76rem; letter-spacing: .26em; text-transform: uppercase; border-block: 1px solid var(--line); padding-block: .7rem; }
+.date .day { font: 400 3.2rem/1 var(--f-num); color: var(--accent); }
+.cue { margin-top: 2.4rem; font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+
+section.s { padding-block: 3.5rem; text-align: center; }
+.s h2 { font: 400 clamp(2rem, 8vw, 2.7rem)/1.15 var(--f-display); margin: .4rem 0 1.4rem; text-wrap: balance; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 2.2rem 1.4rem; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.count div { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.count b { font: 400 clamp(1.9rem, 8vw, 2.6rem)/1 var(--f-num); font-variant-numeric: tabular-nums; }
+.count span, .form label { font-size: .62rem; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.venue-name { font: 400 1.6rem/1.2 var(--f-display); margin: 0; }
+.program { list-style: none; padding: 0; margin: 1.4rem auto 1.8rem; max-width: 19rem; text-align: left; }
+.program li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .8rem; padding-block: .65rem; border-bottom: 1px solid var(--line); }
+.program li:last-child { border-bottom: 0; }
+.program time { color: var(--accent); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
+.btn { appearance: none; cursor: pointer; text-decoration: none; font: 400 .74rem/1 var(--f-body); letter-spacing: .2em; text-transform: uppercase; padding: 0 1.3rem; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--accent); color: var(--on-accent); background: var(--accent); }
+.btn.ghost { background: transparent; color: var(--fg); }
+.form { display: grid; gap: .8rem; text-align: left; margin-top: 1.4rem; }
+.field { width: 100%; box-sizing: border-box; font: 300 1rem/1.4 var(--f-body); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: .85rem 1rem; }
+.done { margin: 1.2rem 0 0; font: 400 1.5rem/1.3 var(--f-display); color: var(--accent); }
+footer { text-align: center; padding-block: 3rem 5rem; color: var(--muted); }
+.mono { font: 400 2.4rem/1 var(--f-display); color: var(--accent); }
+footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<div class="intro" id="intro">
+  <div class="intro-copy">
+    <p class="eyebrow">Light a lantern for</p>
+    <h1><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span></h1>
+  </div>
+  <div class="hold" id="hold">
+    <button class="hold-btn" id="holdBtn" type="button" aria-label="Hold to release your lantern">
+      <svg viewBox="0 0 112 112" aria-hidden="true"><circle cx="56" cy="56" r="52" fill="none" stroke="rgba(255,243,223,.25)" stroke-width="2"></circle><circle id="ring" cx="56" cy="56" r="52" fill="none" stroke="#fff3df" stroke-width="3" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"></circle></svg>
+    </button>
+    <span class="hold-label">Hold to release</span>
+    <p class="hold-sub">Your lantern joins the sky</p>
+  </div>
+</div>
+
+<main class="content" id="content" hidden>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow r">Together with their families</p>
+      <h1 class="r"><span data-k="name1">Kareem</span><br><span class="amp">&amp;</span> <span data-k="name2">Esraa</span></h1>
+      <p class="lede r">invite you to share the night they begin their life together</p>
+      <div class="date r"><span class="side" id="dWeekday">Friday</span><span class="day" id="dDay">19</span><span class="side" id="dMonth">March 2027</span></div>
+      <p class="muted r" data-k="timeText">at seven in the evening</p>
+      <div class="cue r">Scroll</div>
+    </div>
+  </section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">Counting the nights</p>
+    <h2>Until our day</h2>
+    <div class="count" role="timer"><div><b id="cD">00</b><span>Days</span></div><div><b id="cH">00</b><span>Hours</span></div><div><b id="cM">00</b><span>Minutes</span></div><div><b id="cS">00</b><span>Seconds</span></div></div>
+    <p class="muted" id="countNote" style="margin: 1.4rem 0 0">We can't wait to celebrate with you.</p>
+  </div></div></section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">The celebration</p>
+    <h2>Where &amp; when</h2>
+    <p class="venue-name" data-k="venue">The Garden Hall</p>
+    <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+    <ul class="program" id="program"></ul>
+    <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
+  </div></div></section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">RSVP</p>
+    <h2>Will you join us?</h2>
+    <p class="muted" style="margin: 0">Kindly reply by <span data-k="rsvpBy">5 March 2027</span>.</p>
+    <form class="form" id="rsvp">
+      <label for="guestName">Your name</label>
+      <input class="field" id="guestName" autocomplete="name" placeholder="e.g. Mariam Adel" required>
+      <label for="guestCount">Number of guests</label>
+      <select class="field" id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+      <div class="actions"><button class="btn" type="submit" value="yes">Joyfully accept</button><button class="btn ghost" type="submit" value="no">Regretfully decline</button></div>
+    </form>
+    <p class="done" id="rsvpDone" hidden></p>
+  </div></div></section>
+
+  <footer><div class="mono" id="mono">K &amp; E</div><p id="dShort">19 · 03 · 2027</p></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ===== EDIT YOUR DETAILS HERE ===== */
+const CONFIG = {
+  name1: "Kareem", name2: "Esraa",
+  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  timeText: "at seven in the evening",
+  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapQuery: "Maadi Corniche, Cairo",
+  rsvpBy: "5 March 2027",
+  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
+};
+
+/* ===== shared invitation logic ===== */
+const $ = (s) => document.querySelector(s);
+const when = new Date(CONFIG.date);
+const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
+document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+$("#dWeekday").textContent = fmt({ weekday: "long" });
+$("#dDay").textContent = fmt({ day: "numeric" });
+$("#dMonth").textContent = fmt({ month: "long", year: "numeric" });
+$("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
+$("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
+$("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
+$("#mapLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+$("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
+  + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
+  + "&location=" + encodeURIComponent(CONFIG.venue + ", " + CONFIG.address);
+const pad = (n) => String(n).padStart(2, "0");
+function updateCount() {
+  const s = Math.floor((when - Date.now()) / 1000);
+  if (s <= 0) { $("#countNote").textContent = "The day is here. Thank you for celebrating with us."; return; }
+  $("#cD").textContent = pad(Math.floor(s / 86400)); $("#cH").textContent = pad(Math.floor(s / 3600) % 24);
+  $("#cM").textContent = pad(Math.floor(s / 60) % 60); $("#cS").textContent = pad(s % 60);
+}
+updateCount(); setInterval(updateCount, 1000);
+$("#rsvp").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const yes = e.submitter ? e.submitter.value === "yes" : true;
+  const name = $("#guestName").value.trim(), n = $("#guestCount").value;
+  const done = $("#rsvpDone");
+  done.textContent = yes ? `See you under the lanterns, ${name}!` : `We'll miss you, ${name}.`;
+  done.hidden = false; e.target.hidden = true;
+  if (CONFIG.whatsapp) {
+    const msg = yes ? `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. We'll be there! Guests: ${n}` : `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. Sadly we can't make it, but we're sending our love.`;
+    const a = Object.assign(document.createElement("a"), { href: `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, target: "_blank", rel: "noopener", className: "btn", textContent: "Send on WhatsApp" });
+    a.style.marginTop = "1rem"; done.after(a);
+  }
+});
+
+/* ===== Three.js lantern sky ===== */
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const canvas = $("#sky");
+let renderer, scene, camera, hero, released = false;
+const lanterns = [], AMBIENT = 30, TOTAL = 170;
+const visH = (z) => 2 * (camera.position.z - z) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+
+function lanternTexture() {
+  const c = document.createElement("canvas"); c.width = 128; c.height = 160;
+  const g = c.getContext("2d");
+  const glow = g.createRadialGradient(64, 88, 4, 64, 88, 64);
+  glow.addColorStop(0, "rgba(255,190,90,.6)"); glow.addColorStop(1, "rgba(255,150,60,0)");
+  g.fillStyle = glow; g.fillRect(0, 0, 128, 160);
+  const body = g.createRadialGradient(64, 100, 2, 64, 90, 36);
+  body.addColorStop(0, "#fff6d0"); body.addColorStop(.45, "#ffb54d"); body.addColorStop(1, "#d2602a");
+  g.fillStyle = body; g.beginPath(); g.moveTo(46, 62); g.quadraticCurveTo(64, 54, 82, 62); g.lineTo(86, 110); g.quadraticCurveTo(64, 122, 42, 110); g.closePath(); g.fill();
+  g.fillStyle = "#fffbe8"; g.beginPath(); g.ellipse(64, 108, 5, 3.5, 0, 0, Math.PI * 2); g.fill();
+  return new THREE.CanvasTexture(c);
+}
+
+function place(s, anywhere) {
+  const z = -18 + Math.random() * 15, h = visH(z), w = h * camera.aspect;
+  s.position.set((Math.random() - .5) * w, anywhere ? (Math.random() - .5) * h : -h / 2 - 1 - Math.random() * 2, z);
+  const size = .55 + Math.random() * .6; s.scale.set(size * .8, size, 1);
+  s.userData = { vy: .3 + Math.random() * .45, ph: Math.random() * 6.28, amp: .12 + Math.random() * .2 };
+}
+
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setClearColor(0, 0);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, .1, 100); camera.position.z = 10;
+  const tex = lanternTexture();
+  for (let i = 0; i < TOTAL; i++) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    place(s, true); s.visible = i < AMBIENT; scene.add(s); lanterns.push(s);
+  }
+  hero = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  hero.scale.set(1.8, 2.25, 1); hero.visible = false; scene.add(hero);
+  const resize = () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); };
+  resize(); addEventListener("resize", resize);
+  let t = 0;
+  gsap.ticker.add((time, dms) => {
+    const dt = Math.min(dms / 1000, .05); t += dt;
+    lanterns.forEach((s, i) => {
+      if (!s.visible) return;
+      const u = s.userData;
+      s.position.y += u.vy * dt * (reduce ? .4 : 1);
+      s.position.x += Math.sin(t * .6 + u.ph) * u.amp * dt;
+      s.material.opacity = .82 + .18 * Math.sin(t * 6 + u.ph * 3);
+      if (s.position.y > visH(s.position.z) / 2 + 1.2) { if (released || i < AMBIENT) place(s, false); else s.visible = false; }
+    });
+    if (hero.visible) hero.material.opacity = .9 + .1 * Math.sin(t * 7);
+    renderer.render(scene, camera);
+  });
+} catch (err) { renderer = null; }
+
+/* ===== press and hold ===== */
+const ring = $("#ring");
+const hold = gsap.to(ring, { strokeDashoffset: 0, duration: .9, ease: "none", paused: true, onComplete: release });
+const holdBtn = $("#holdBtn");
+holdBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); hold.play(); });
+["pointerup", "pointerleave", "pointercancel"].forEach((ev) => holdBtn.addEventListener(ev, () => { if (!released) hold.reverse(); }));
+holdBtn.addEventListener("click", (e) => { if (e.detail === 0) release(); });   // keyboard
+holdBtn.addEventListener("contextmenu", (e) => e.preventDefault());
+
+function release() {
+  if (released) return; released = true;
+  const k = reduce ? .4 : 1;
+  const tl = gsap.timeline();
+  tl.to("#hold, .intro-copy", { opacity: 0, y: -12, duration: .5, stagger: .1 });
+  if (renderer) {
+    const h = visH(4);
+    hero.position.set(0, -h / 2 + h * .2, 4); hero.visible = true;
+    tl.from(hero.scale, { x: .2, y: .25, duration: .6, ease: "back.out(2)" }, 0)
+      .to(hero.position, { y: visH(-8) / 2 + 2, z: -8, x: .8, duration: 7 * k, ease: "power1.in" }, .3);
+    lanterns.slice(AMBIENT).forEach((s) => gsap.delayedCall(.6 + Math.random() * 4.5 * k, () => { place(s, false); s.visible = true; }));
+  }
+  tl.add(() => {
+    $("#intro").hidden = true; $("#content").hidden = false; document.body.classList.add("open"); scrollTo(0, 0);
+  }, 1.6 * k)
+    .from(".hero .r", { y: 30, opacity: 0, duration: 1 * k, stagger: .14 * k, ease: "power3.out" });
+}
+</script>
+</body>
+</html>

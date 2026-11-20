@@ -24,6 +24,7 @@
   --f-body: "Jost", "Futura", "Avenir Next", system-ui, sans-serif;
   color-scheme: dark;
 }
+[hidden] { display: none !important; }
 html { background: var(--night); }
 body {
   background: radial-gradient(120% 80% at 50% 20%, var(--night-2) 0%, var(--night) 70%) fixed, var(--night);
@@ -151,9 +152,9 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 .no-gl .intro { background: radial-gradient(60% 40% at 50% 50%, rgba(216,182,116,.18), transparent); }
 @media (prefers-reduced-motion: reduce) { .join .pulse { animation: none; } }
 </style>
-
 </head>
 <body>
+
 <canvas id="scene" aria-hidden="true"></canvas>
 
 <div class="intro" id="intro">
