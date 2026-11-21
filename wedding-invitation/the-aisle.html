@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Walk Down the Aisle</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;1,400;1,500&family=Great+Vibes&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* Layout: a fixed Three.js model of the venue (wooden aisle, flower borders, the white house) at golden hour;
+   scrolling walks the camera down the aisle while cream cards rise past. Sky turns to night by the house. */
+:root {
+  --ink: #3a2a1f; --muted: #6e5a4a; --wood: #9a6640; --rose: #b8616a; --cream: #fffaf2;
+  --card: rgba(255, 250, 242, .86); --line: rgba(154, 102, 64, .25); --field: rgba(255, 255, 255, .8);
+  --f-display: "Cormorant Garamond", Georgia, serif;
+  --f-script: "Great Vibes", "Snell Roundhand", cursive;
+  --f-ar: "Amiri", "Geeza Pro", serif;
+  --f-body: "Jost", "Avenir Next", system-ui, sans-serif;
+  color-scheme: light;
+}
+[hidden] { display: none !important; }
+html { background: #f3d2b0; }
+body { background: linear-gradient(#9fb4cf, #f6cfa9 60%, #7d9450) fixed, #f3d2b0; color: var(--ink); font: 300 16px/1.6 var(--f-body); }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+
+.content { position: relative; z-index: 1; pointer-events: none; }
+.content .card, .content a, .content button, .content input, .content select, .content .intro-copy { pointer-events: auto; }
+.wrap { max-width: 30rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.stop { min-height: 100svh; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; padding-block: 18svh 6svh; }
+.stop.top { justify-content: space-between; padding-block: calc(env(safe-area-inset-top, 0px) + 7svh) 4svh; }
+
+.intro-copy { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+.ayah { font: 400 1.12rem/2 var(--f-ar); color: var(--ink); margin: 0; max-width: 24rem; text-wrap: balance; text-shadow: 0 1px 12px rgba(255, 244, 228, .9); }
+.ayah cite { display: block; font-style: normal; font-size: .78rem; color: var(--muted); }
+.eyebrow { font: 500 .7rem/1.4 var(--f-body); letter-spacing: .3em; text-transform: uppercase; color: var(--wood); margin: 0; }
+.names { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; column-gap: .1em; max-width: 100%; font: 400 clamp(3.2rem, 15vw, 5.4rem)/1.05 var(--f-script); margin: .6rem 0 0; color: #fffaf2; text-shadow: 0 2px 2px rgba(80, 50, 30, .35), 0 6px 28px rgba(80, 50, 30, .45); }
+.names .amp { font-family: var(--f-display); font-style: italic; font-size: .42em; padding: 0 .2em; vertical-align: middle; }
+.walk { margin-top: 1.2rem; display: flex; flex-direction: column; align-items: center; gap: 6px; font: 500 .7rem/1.4 var(--f-body); letter-spacing: .28em; text-transform: uppercase; color: var(--ink); background: rgba(255, 250, 242, .72); border-radius: 16px; padding: 12px 18px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.walk small { font-weight: 400; letter-spacing: .12em; text-transform: none; font-size: .8rem; }
+.walk svg { width: 22px; height: 30px; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 1.8rem 1.4rem; text-align: center; box-shadow: 0 18px 50px rgba(60, 35, 20, .18); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.card h2 { font: italic 500 clamp(2rem, 8vw, 2.6rem)/1.1 var(--f-display); margin: .35rem 0 1rem; text-wrap: balance; }
+.date { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin: .4rem auto 1.2rem; max-width: 20rem; }
+.date .side { font: 500 .72rem/1 var(--f-body); letter-spacing: .24em; text-transform: uppercase; border-block: 1px solid var(--line); padding-block: .7rem; }
+.date .day { font: 500 3.2rem/1 var(--f-display); color: var(--wood); }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: .3rem; margin-top: .6rem; }
+.count div { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.count b { font: 500 clamp(1.8rem, 8vw, 2.4rem)/1 var(--f-display); font-variant-numeric: tabular-nums; display: inline-block; }
+.count span, .form label { font-size: .6rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.photo { width: 100%; max-width: 100%; aspect-ratio: 828 / 465; object-fit: cover; border-radius: 12px; display: block; margin: .2rem 0 1rem; }
+.venue-name { font: 500 1.6rem/1.2 var(--f-display); margin: 0; }
+.program { list-style: none; padding: 0; margin: .4rem auto 0; max-width: 19rem; text-align: left; }
+.program li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .8rem; padding-block: .7rem; border-bottom: 1px solid var(--line); }
+.program li:last-child { border-bottom: 0; }
+.program time { color: var(--wood); font-weight: 500; font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; margin-top: 1.2rem; }
+.btn { appearance: none; cursor: pointer; text-decoration: none; font: 500 .72rem/1 var(--f-body); letter-spacing: .18em; text-transform: uppercase; padding: 0 1.2rem; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--wood); color: #fffaf2; background: var(--wood); }
+.btn.ghost { background: transparent; color: var(--ink); }
+.form { display: grid; gap: .7rem; text-align: left; margin-top: 1rem; }
+.field { width: 100%; box-sizing: border-box; font: 400 1rem/1.4 var(--f-body); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: .8rem 1rem; }
+.done { margin: 1rem 0 0; font: 400 2rem/1.3 var(--f-script); color: var(--rose); }
+.finale { text-align: center; display: flex; flex-direction: column; align-items: center; gap: .6rem; color: #fffaf2; text-shadow: 0 2px 16px rgba(20, 15, 40, .7); }
+.finale .mono { font: 400 3.4rem/1 var(--f-script); }
+.finale p { margin: 0; letter-spacing: .26em; font-size: .72rem; text-transform: uppercase; }
+.finale .btn { pointer-events: auto; background: rgba(255, 250, 242, .14); border-color: rgba(255, 250, 242, .7); color: #fffaf2; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.progress { position: fixed; z-index: 3; left: max(10px, env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); width: 3px; height: 120px; border-radius: 3px; background: rgba(255, 250, 242, .35); pointer-events: none; }
+.progress i { display: block; width: 100%; height: 0; border-radius: 3px; background: #fffaf2; }
+:focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<canvas id="scene" aria-label="A 3D model of the White House venue at sunset"></canvas>
+<div class="progress" aria-hidden="true"><i id="prog"></i></div>
+
+<main class="content">
+  <section class="stop top">
+    <div class="wrap intro-copy">
+      <p class="ayah" dir="rtl" lang="ar"><span data-k="verse"></span><cite>سورة الروم · ٢١</cite></p>
+      <h1 class="names"><span data-k="name1">Kareem</span><span class="amp">&amp;</span><span data-k="name2">Esraa</span></h1>
+    </div>
+    <div class="wrap intro-copy">
+      <div class="walk">
+        <svg viewBox="0 0 22 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="2" y="1" width="18" height="28" rx="9"></rect><path id="wheel" d="M11 7v5"></path></svg>
+        Scroll to walk down the aisle
+        <small>tap the flowers along the way</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="stop"><div class="wrap"><div class="card reveal">
+    <p class="eyebrow">Together with their families</p>
+    <h2>We're getting married</h2>
+    <div class="date"><span class="side" id="dWeekday">Friday</span><span class="day" id="dDay">19</span><span class="side" id="dMonth">March 2027</span></div>
+    <div class="count" role="timer"><div><b id="cD">00</b><span>Days</span></div><div><b id="cH">00</b><span>Hours</span></div><div><b id="cM">00</b><span>Min</span></div><div><b id="cS">00</b><span>Sec</span></div></div>
+  </div></div></section>
+
+  <section class="stop"><div class="wrap"><div class="card reveal">
+    <p class="eyebrow">The place</p>
+    <img class="photo" src="venue.jpg" alt="The White House Venue: a wooden aisle lined with pastel flowers leading to a white house with brown timber, at sunset">
+    <p class="venue-name" data-k="venue">White House Venue</p>
+    <p class="muted" data-k="address" style="margin: .2rem 0 0">Mansoura, Dakahlia</p>
+    <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
+  </div></div></section>
+
+  <section class="stop"><div class="wrap"><div class="card reveal">
+    <p class="eyebrow">The evening</p>
+    <h2>How the night unfolds</h2>
+    <ul class="program" id="program"></ul>
+  </div></div></section>
+
+  <section class="stop"><div class="wrap"><div class="card reveal">
+    <p class="eyebrow">RSVP</p>
+    <h2>Will you join us?</h2>
+    <p class="muted" style="margin: 0">Kindly reply by <span data-k="rsvpBy">5 March 2027</span>.</p>
+    <form class="form" id="rsvp">
+      <label for="guestName">Your name</label>
+      <input class="field" id="guestName" autocomplete="name" placeholder="e.g. Mariam Adel" required>
+      <label for="guestCount">Number of guests</label>
+      <select class="field" id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+      <div class="actions" style="margin-top: .4rem"><button class="btn" type="submit" value="yes">Joyfully accept</button><button class="btn ghost" type="submit" value="no">Regretfully decline</button></div>
+    </form>
+    <p class="done" id="rsvpDone" hidden></p>
+  </div></div></section>
+
+  <section class="stop" style="justify-content: space-between; padding-block: 9svh 7svh"><div class="wrap finale">
+    <p>You've reached the house</p>
+    <div class="mono" id="mono">K &amp; E</div>
+    <p id="dShort">19 · 03 · 2027</p>
+  </div><div class="wrap finale"><button class="btn" id="lightBtn" type="button">Tap the house to light it up</button></div></section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ===== EDIT YOUR DETAILS HERE ===== */
+const CONFIG = {
+  name1: "Kareem", name2: "Esraa",
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // Quran 30:21; "" hides it
+  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  venue: "White House Venue", address: "Mansoura, Dakahlia",
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansoura",
+  rsvpBy: "5 March 2027",
+  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
+};
+
+/* ===== shared invitation logic ===== */
+const $ = (s) => document.querySelector(s);
+const when = new Date(CONFIG.date);
+const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
+document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+document.querySelectorAll(".ayah").forEach((el) => { el.hidden = !CONFIG.verse; });
+$("#dWeekday").textContent = fmt({ weekday: "long" });
+$("#dDay").textContent = fmt({ day: "numeric" });
+$("#dMonth").textContent = fmt({ month: "long", year: "numeric" });
+$("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
+$("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
+$("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
+$("#mapLink").href = CONFIG.mapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+$("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
+  + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
+  + "&location=" + encodeURIComponent(CONFIG.venue + ", " + CONFIG.address);
+const pad = (n) => String(n).padStart(2, "0");
+function updateCount() {
+  const s = Math.floor((when - Date.now()) / 1000);
+  if (s <= 0) return;
+  $("#cD").textContent = pad(Math.floor(s / 86400)); $("#cH").textContent = pad(Math.floor(s / 3600) % 24);
+  $("#cM").textContent = pad(Math.floor(s / 60) % 60); $("#cS").textContent = pad(s % 60);
+  gsap.fromTo("#cS", { rotationX: -90, opacity: .2 }, { rotationX: 0, opacity: 1, duration: .45, ease: "back.out(2)" });
+}
+updateCount(); setInterval(updateCount, 1000);
+$("#rsvp").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const yes = e.submitter ? e.submitter.value === "yes" : true;
+  const name = $("#guestName").value.trim(), n = $("#guestCount").value;
+  const done = $("#rsvpDone");
+  done.textContent = yes ? `See you on the aisle, ${name}!` : `We'll miss you, ${name}.`;
+  done.hidden = false; e.target.hidden = true;
+  if (yes && world) world.petalStorm();
+  if (CONFIG.whatsapp) {
+    const msg = yes ? `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. We'll be there! Guests: ${n}` : `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. Sadly we can't make it, but we're sending our love.`;
+    const a = Object.assign(document.createElement("a"), { href: `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, target: "_blank", rel: "noopener", className: "btn", textContent: "Send on WhatsApp" });
+    a.style.marginTop = "1rem"; done.after(a);
+  }
+});
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (!reduce) gsap.to("#wheel", { y: 5, opacity: 0, duration: 1.1, repeat: -1, ease: "power1.in" });
+const io = new IntersectionObserver((es) => es.forEach((en) => {
+  if (!en.isIntersecting) return; io.unobserve(en.target);
+  gsap.fromTo(en.target, { y: 60, scale: .96, opacity: .3 }, { y: 0, scale: 1, opacity: 1, duration: 1, ease: "power3.out" });
+}), { threshold: .15 });
+document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+/* =========================================================
+   THE VENUE IN 3D
+   ========================================================= */
+const TAU = Math.PI * 2;
+let world = null;
+try { world = buildVenue(); } catch (err) { world = null; console.warn(err); }
+
+function cvs(w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; }
+function dot(stops) { const [c, g] = cvs(64, 64), r = g.createRadialGradient(32, 32, 0, 32, 32, 32); stops.forEach(([o, col]) => r.addColorStop(o, col)); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); }
+
+function buildVenue() {
+  const canvas = $("#scene");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight, .1, 400);
+  const START_Z = 10, END_Z = -29, HOUSE_Z = -52;
+  camera.position.set(0, 1.7, START_Z);
+  const look = new THREE.Vector3(0, 2.6, HOUSE_Z);
+
+  /* ---- sky dome with golden hour → night ---- */
+  const skyU = { uDusk: { value: 0 }, uSun: { value: new THREE.Vector3(-.55, .07, -.83).normalize() } };
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(300, 32, 16), new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyU,
+    vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `
+      uniform float uDusk; uniform vec3 uSun; varying vec3 vDir;
+      float hash(vec3 p){ return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453); }
+      void main(){
+        float h = vDir.y;
+        vec3 top = mix(vec3(.55,.67,.83), vec3(.07,.08,.2), uDusk);
+        vec3 mid = mix(vec3(.97,.8,.66), vec3(.46,.3,.46), uDusk);
+        vec3 hor = mix(vec3(1.,.88,.74), vec3(.95,.55,.4), uDusk);
+        vec3 col = mix(hor, mid, smoothstep(0.0, .1, h));
+        col = mix(col, top, smoothstep(.1, .55, h));
+        if (h < 0.0) col = hor * .92;
+        float s = max(dot(vDir, uSun), 0.0);
+        col += vec3(1., .78, .5) * (pow(s, 700.) * 2.5 + pow(s, 12.) * .35) * (1. - uDusk * .7);
+        vec3 q = floor(vDir * 320.);
+        float st = step(.9975, hash(q)) * smoothstep(.08, .4, h) * smoothstep(.45, 1., uDusk);
+        col += vec3(st);
+        gl_FragColor = vec4(col, 1.);
+      }`
+  }));
+  scene.add(sky);
+  const fogDay = new THREE.Color(1, .88, .76), fogNight = new THREE.Color(.42, .3, .4);
+  scene.fog = new THREE.Fog(fogDay.clone(), 30, 150);
+
+  const hemi = new THREE.HemisphereLight(0xffe4c8, 0x5c7a3c, 1.0); scene.add(hemi);
+  const sun = new THREE.DirectionalLight(0xffd8a8, .85); sun.position.set(10, 14, 24); scene.add(sun);
+
+  const std = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .85 }, o));
+  const box = (w, h, d, m, x, y, z, parent) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); (parent || scene).add(b); return b; };
+
+  /* ---- lawn ---- */
+  const [gc, gg] = cvs(256, 256);
+  gg.fillStyle = "#6f8b46"; gg.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 2600; i++) { gg.fillStyle = `rgba(${40 + Math.random() * 60},${70 + Math.random() * 60},${20 + Math.random() * 30},.35)`; gg.fillRect(Math.random() * 256, Math.random() * 256, 1.5, 3 + Math.random() * 3); }
+  const grass = new THREE.CanvasTexture(gc); grass.wrapS = grass.wrapT = THREE.RepeatWrapping; grass.repeat.set(60, 60);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), std(0xffffff, { map: grass }));
+  ground.rotation.x = -Math.PI / 2; scene.add(ground);
+
+  /* ---- wooden aisle ---- */
+  const AISLE_FROM = 8, AISLE_TO = HOUSE_Z + 4.2, PLANK = .3;
+  const nPlanks = Math.floor((AISLE_FROM - AISLE_TO) / PLANK);
+  const planks = new THREE.InstancedMesh(new THREE.BoxGeometry(3.2, .1, PLANK - .035), std(0xffffff, { roughness: .7 }), nPlanks);
+  const m4 = new THREE.Matrix4(), col = new THREE.Color();
+  const woods = [0xb07d52, 0xa3714a, 0xbb8a5d, 0x9c6a44];
+  for (let i = 0; i < nPlanks; i++) {
+    m4.makeTranslation((Math.random() - .5) * .04, .06, AISLE_FROM - i * PLANK); planks.setMatrixAt(i, m4);
+    planks.setColorAt(i, col.setHex(woods[i % 4]).multiplyScalar(.92 + Math.random() * .12));
+  }
+  scene.add(planks);
+  [-1.62, 1.62].forEach((x) => box(.06, .12, AISLE_FROM - AISLE_TO, std(0x7f5536), x, .06, (AISLE_FROM + AISLE_TO) / 2));
+
+  /* ---- flowers: borders, pedestal bouquets, table centrepieces ---- */
+  const palette = [0xfff6ea, 0xfbe0c6, 0xf6c2a4, 0xf3b8c0, 0xe7cfe9, 0xffffff, 0xf7e3a8, 0xf0a8a0];
+  const F = [];   // {x,y,z,s,c}
+  const addFlower = (x, y, z, s) => F.push({ x, y, z, s, c: palette[(Math.random() * palette.length) | 0], pop: 0 });
+  for (const side of [-1, 1]) for (let z = AISLE_FROM; z > AISLE_TO + .5; z -= .11) {
+    const x = side * (1.95 + Math.random() * .45), y = .12 + Math.random() * .28;
+    addFlower(x, y, z + (Math.random() - .5) * .1, .1 + Math.random() * .08);
+  }
+  const pedZ = [3, -6, -15, -24, -33, -42];
+  const pedMat = std(0xf6f2ec, { roughness: .6 });
+  pedZ.forEach((pz) => [-1, 1].forEach((side) => {
+    const px = side * 2.75;
+    box(.95, 1.5, .95, pedMat, px, .75, pz);
+    for (let i = 0; i < 70; i++) {
+      const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * .7, up = Math.random();
+      addFlower(px + Math.cos(a) * r, 1.55 + up * .45 * (1 - r), pz + Math.sin(a) * r, .1 + Math.random() * .09);
+    }
+    for (let i = 0; i < 22; i++) {   // cascade spilling toward the aisle
+      const k = i / 22;
+      addFlower(px - side * (.45 + Math.random() * .15), 1.5 - k * 1.2, pz + (Math.random() - .5) * .6, .09 + Math.random() * .06);
+    }
+  }));
+  const tables = [];
+  [[-6.5, -6], [6.8, -8], [-8.5, -14], [7.5, -17], [-6.8, -22], [8.8, -25], [-8, -30], [6.6, -31], [-6.4, -38], [7.8, -40]].forEach(([x, z]) => {
+    tables.push([x, z]);
+    for (let i = 0; i < 16; i++) { const a = Math.random() * TAU, r = Math.random() * .22; addFlower(x + Math.cos(a) * r, .86 + Math.random() * .16, z + Math.sin(a) * r, .06 + Math.random() * .04); }
+  });
+  const flowerGeo = new THREE.IcosahedronGeometry(1, 1);
+  const flowers = new THREE.InstancedMesh(flowerGeo, std(0xffffff, { flatShading: true, roughness: .9 }), F.length);
+  F.forEach((f, i) => flowers.setColorAt(i, col.setHex(f.c)));
+  scene.add(flowers);
+  const leaves = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), std(0x4f6e32, { flatShading: true }), Math.floor(F.length / 3));
+  for (let i = 0; i < leaves.count; i++) { const f = F[i * 3]; m4.compose(new THREE.Vector3(f.x + (Math.random() - .5) * .15, f.y - .06, f.z), new THREE.Quaternion(), new THREE.Vector3(f.s * 1.3, f.s * .8, f.s * 1.3)); leaves.setMatrixAt(i, m4); }
+  scene.add(leaves);
+
+  /* ---- tables and chairs ---- */
+  const woodMat = std(0x9a6a44, { roughness: .7 });
+  const tTop = new THREE.InstancedMesh(new THREE.CylinderGeometry(.8, .8, .06, 28), woodMat, tables.length);
+  const tLeg = new THREE.InstancedMesh(new THREE.CylinderGeometry(.08, .12, .8, 10), woodMat, tables.length);
+  const seats = new THREE.InstancedMesh(new THREE.BoxGeometry(.42, .05, .42), woodMat, tables.length * 6);
+  const backs = new THREE.InstancedMesh(new THREE.BoxGeometry(.42, .5, .05), woodMat, tables.length * 6);
+  const q = new THREE.Quaternion(), e = new THREE.Euler(), one = new THREE.Vector3(1, 1, 1), v = new THREE.Vector3();
+  tables.forEach(([x, z], i) => {
+    tTop.setMatrixAt(i, m4.makeTranslation(x, .8, z)); tLeg.setMatrixAt(i, m4.makeTranslation(x, .4, z));
+    for (let c = 0; c < 6; c++) {
+      const a = c / 6 * TAU; q.setFromEuler(e.set(0, -a + Math.PI / 2, 0));
+      seats.setMatrixAt(i * 6 + c, m4.compose(v.set(x + Math.cos(a) * 1.1, .46, z + Math.sin(a) * 1.1), q, one));
+      backs.setMatrixAt(i * 6 + c, m4.compose(v.set(x + Math.cos(a) * 1.32, .72, z + Math.sin(a) * 1.32), q, one));
+    }
+  });
+  scene.add(tTop, tLeg, seats, backs);
+
+  /* ---- trees ---- */
+  const treeMat = std(0x3d5f32, { flatShading: true }), treeDark = std(0x2f4b28, { flatShading: true });
+  const blob = new THREE.IcosahedronGeometry(1, 1);
+  for (let i = 0; i < 26; i++) {
+    const side = i < 18 ? 1 : -1, x = side * (13 + Math.random() * 8), z = 4 - Math.random() * 64;
+    for (let k = 0; k < 4; k++) { const s = 1.6 + Math.random() * 1.6; const b = new THREE.Mesh(blob, k % 2 ? treeMat : treeDark); b.position.set(x + (Math.random() - .5) * 2.5, 2 + Math.random() * 3, z + (Math.random() - .5) * 2.5); b.scale.set(s, s * 1.1, s); scene.add(b); }
+  }
+  const pole = (x, z, h) => box(.08, h, .08, std(0x666666), x, h / 2, z);
+  pole(-11, -20, 9); pole(10, -46, 10);
+
+  /* ---- the white house ---- */
+  const house = new THREE.Group(); house.position.set(0, 0, HOUSE_Z); scene.add(house);
+  const white = std(0xf4f0e8, { roughness: .7 }), timber = std(0x6b4630, { roughness: .8 }), deckMat = std(0x8a5f40);
+  const winMat = std(0x3b2c22, { emissive: 0xffc47a, emissiveIntensity: .15 });
+  box(9, .7, 6.4, deckMat, 0, .35, 0, house);
+  [[.12, 4.3], [.35, 3.85], [.58, 3.4]].forEach(([y, z]) => box(3.6, .24, .45, deckMat, 0, y, z, house));
+  box(6.4, 3.8, 4.6, white, 0, 2.6, -.4, house);
+  const gableShape = new THREE.Shape(); gableShape.moveTo(-3.2, 0); gableShape.lineTo(3.2, 0); gableShape.lineTo(0, 2.4); gableShape.lineTo(-3.2, 0);
+  const gable = new THREE.Mesh(new THREE.ExtrudeGeometry(gableShape, { depth: 4.6, bevelEnabled: false }), white);
+  gable.position.set(0, 4.5, -2.7); house.add(gable);
+  const slope = Math.atan2(2.4, 3.2), rl = Math.hypot(3.2, 2.4) + .5;
+  [-1, 1].forEach((s) => { const r = box(rl, .16, 5.4, timber, s * 1.6, 5.75, -.4, house); r.rotation.z = -s * slope; });
+  [-3.15, 3.15].forEach((x) => box(.18, 3.8, .18, timber, x, 2.6, 1.92, house));
+  box(6.6, .16, .12, timber, 0, 4.5, 1.94, house);
+  box(6.6, .16, .12, timber, 0, 2.75, 1.94, house);
+  [-1, 1].forEach((s) => { const b = box(4.1, .14, .12, timber, s * 1.6, 5.7, 1.95, house); b.rotation.z = -s * slope; });
+  box(1.3, 2.1, .1, timber, 0, 1.75, 1.9, house);
+  const doorGlass = box(.8, .9, .04, winMat, 0, 2.2, 1.97, house);
+  const windows = [];
+  [[-2.1, 1.85, 1, 1.3], [2.1, 1.85, 1, 1.3], [-1.6, 3.65, .8, .9], [1.6, 3.65, .8, .9], [0, 5.35, .8, 1]].forEach(([x, y, w, h]) => {
+    box(w + .2, h + .2, .06, timber, x, y, 1.93, house);
+    windows.push(box(w, h, .06, winMat, x, y, 1.97, house));
+    box(.06, h, .07, timber, x, y, 1.99, house);
+  });
+  box(2.2, .1, 1, timber, -2, 2.9, 2.4, house);
+  for (let i = 0; i < 8; i++) box(.05, .55, .05, timber, -3 + i * .28, 3.2, 2.85, house);
+  box(2.2, .06, .06, timber, -2, 3.48, 2.85, house);
+  const lampTex = dot([[0, "rgba(255,240,200,1)"], [.3, "rgba(255,190,110,.6)"], [1, "rgba(255,160,80,0)"]]);
+  const lamps = [-.95, .95].map((x) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: lampTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .2, fog: false })); s.position.set(x, 2.6, 2.1); s.scale.setScalar(.8); house.add(s); return s; });
+  const porch = new THREE.PointLight(0xffb870, 0, 14); porch.position.set(0, 3, 4); house.add(porch);
+
+  /* ---- string lights (appear at dusk) ---- */
+  const bulbs = [];
+  for (const side of [-1, 1]) for (let i = 0; i < pedZ.length - 1; i++) {
+    const z0 = pedZ[i], z1 = pedZ[i + 1];
+    for (let k = 0; k <= 14; k++) { const t = k / 14, sag = Math.sin(t * Math.PI) * .45; bulbs.push(side * 2.75, 2.75 - sag, z0 + (z1 - z0) * t); }
+  }
+  for (let k = 0; k <= 24; k++) { const t = k / 24; bulbs.push(-2.75 + 5.5 * t, 3 - Math.sin(t * Math.PI) * .5, pedZ[pedZ.length - 1]); }
+  const lightsMat = new THREE.PointsMaterial({ size: .22, map: lampTex, color: 0xffd59a, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+  scene.add(new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(bulbs, 3)), lightsMat));
+
+  /* ---- falling petals ---- */
+  const petalTex = (() => { const [c, g] = cvs(64, 64), r = g.createRadialGradient(32, 32, 2, 32, 32, 30); r.addColorStop(0, "rgba(255,236,232,1)"); r.addColorStop(.7, "rgba(244,180,180,.95)"); r.addColorStop(1, "rgba(244,180,180,0)"); g.fillStyle = r; g.beginPath(); g.ellipse(32, 32, 30, 18, .6, 0, TAU); g.fill(); return new THREE.CanvasTexture(c); })();
+  const PN = 260, pp = new Float32Array(PN * 3), pv = new Float32Array(PN * 3);
+  const seed = (i, anyY) => { pp[i * 3] = (Math.random() - .5) * 10; pp[i * 3 + 1] = anyY ? Math.random() * 7 : 6 + Math.random() * 2; pp[i * 3 + 2] = camera.position.z - 2 - Math.random() * 22; pv[i * 3] = (Math.random() - .5) * .3; pv[i * 3 + 1] = -(.3 + Math.random() * .4); pv[i * 3 + 2] = 0; };
+  for (let i = 0; i < PN; i++) seed(i, true);
+  const petals = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(pp, 3)), new THREE.PointsMaterial({ size: .16, map: petalTex, transparent: true, depthWrite: false, alphaTest: .05 }));
+  scene.add(petals);
+
+  /* ---- bursts: petal pops on tap, fireworks over the house ---- */
+  const bursts = [];
+  function burst(at, n, colors, speed, gravity, size, life, additive) {
+    const p = new Float32Array(n * 3), vel = new Float32Array(n * 3), c = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      p[i * 3] = at.x; p[i * 3 + 1] = at.y; p[i * 3 + 2] = at.z;
+      const th = Math.random() * TAU, ph = Math.acos(2 * Math.random() - 1), s = speed * (.4 + Math.random() * .6);
+      vel[i * 3] = Math.sin(ph) * Math.cos(th) * s; vel[i * 3 + 1] = Math.abs(Math.cos(ph)) * s * (additive ? (Math.random() < .5 ? -1 : 1) : 1.2); vel[i * 3 + 2] = Math.sin(ph) * Math.sin(th) * s;
+      col.setHex(colors[(Math.random() * colors.length) | 0]); c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b;
+    }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(p, 3)); geo.setAttribute("color", new THREE.BufferAttribute(c, 3));
+    const mat = new THREE.PointsMaterial({ size, map: additive ? lampTex : petalTex, vertexColors: true, transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending, fog: false });
+    const pts = new THREE.Points(geo, mat); scene.add(pts);
+    bursts.push({ pts, vel, gravity, age: 0, life });
+  }
+  const petalColors = [0xffffff, 0xfbe0c6, 0xf6c2a4, 0xf3b8c0, 0xe7cfe9];
+  const fireColors = [[0xffd58a, 0xfff2d0], [0xf7a8b8, 0xffe0ea], [0xcfe0ff, 0xffffff], [0xffc07a, 0xff8a6a]];
+  let lit = false;
+  function lightHouse() {
+    gsap.to(winMat, { emissiveIntensity: 2.2, duration: .8 });
+    gsap.to(porch, { intensity: 2.5, duration: .8 });
+    lamps.forEach((l) => gsap.to(l.material, { opacity: 1, duration: .8 }));
+    for (let k = 0; k < 7; k++) gsap.delayedCall(k * .45 + (lit ? 0 : .5), () => {
+      const at = new THREE.Vector3((Math.random() - .5) * 14, 10 + Math.random() * 6, HOUSE_Z - 4 - Math.random() * 8);
+      const pair = fireColors[(Math.random() * fireColors.length) | 0];
+      burst(at, 300, pair, 6.5, -2.6, .55, 2.8, true);
+    });
+    lit = true;
+  }
+
+  /* ---- interaction ---- */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  const pointer = { x: 0, y: 0 };
+  addEventListener("pointermove", (ev) => { pointer.x = ev.clientX / innerWidth - .5; pointer.y = ev.clientY / innerHeight - .5; });
+  canvas.addEventListener("click", (ev) => {
+    ndc.set(ev.clientX / innerWidth * 2 - 1, -(ev.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects([house, flowers, ground], true)[0];
+    if (!hit) return;
+    let o = hit.object; while (o && o !== house) o = o.parent;
+    if (o === house) { lightHouse(); return; }
+    burst(hit.point.clone().add(new THREE.Vector3(0, .2, 0)), 70, petalColors, 2.6, -2.2, .14, 2.2, false);
+    F.forEach((f) => { const d = Math.hypot(f.x - hit.point.x, f.z - hit.point.z); if (d < 1.3) f.pop = Math.max(f.pop, 1 - d / 1.3); });
+  });
+  $("#lightBtn").addEventListener("click", lightHouse);
+
+  /* ---- scroll walks the camera ---- */
+  const state = { p: 0, z: START_Z, dusk: 0 };
+  const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  function resize() { camera.aspect = innerWidth / innerHeight; camera.fov = camera.aspect < .7 ? 62 : 50; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); }
+  resize(); addEventListener("resize", resize);
+
+  const pos3 = new THREE.Vector3(), scl3 = new THREE.Vector3(), quat = new THREE.Quaternion();
+  let lastZ = 1e9, t = 0;
+  gsap.ticker.add((time, dms) => {
+    const dt = Math.min(dms / 1000, .05); t += dt;
+    const sc = document.scrollingElement, max = Math.max(1, sc.scrollHeight - innerHeight);
+    state.p = sc.scrollTop / max;
+    $("#prog").style.height = (state.p * 100) + "%";
+    const targetZ = START_Z + (END_Z - START_Z) * smooth(0, 1, state.p);
+    state.z += (targetZ - state.z) * (reduce ? 1 : .06);
+    camera.position.z = state.z;
+    camera.position.y = 1.7 + Math.sin(state.z * 1.6) * .025;              // soft footsteps
+    camera.position.x += ((pointer.x * .5) - camera.position.x) * .04;
+    look.set(pointer.x * 3, 2.4 - pointer.y * 1.2, HOUSE_Z);
+    camera.lookAt(look);
+
+    const dusk = smooth(.35, .92, state.p);
+    skyU.uDusk.value = dusk;
+    scene.fog.color.copy(fogDay).lerp(fogNight, dusk);
+    hemi.intensity = 1 - dusk * .62; sun.intensity = .85 - dusk * .65;
+    lightsMat.opacity = smooth(.4, .7, state.p);
+    if (!lit) { winMat.emissiveIntensity = .15 + dusk * 1.3; porch.intensity = dusk * 1.4; lamps.forEach((l) => (l.material.opacity = .2 + dusk * .8)); }
+
+    // flowers bloom as you approach; tapped ones bounce
+    let popping = false;
+    for (const f of F) if (f.pop > .001) { popping = true; break; }
+    if (Math.abs(state.z - lastZ) > .005 || popping) {
+      lastZ = state.z;
+      F.forEach((f, i) => {
+        const ahead = state.z - f.z;
+        const b = 1 - smooth(9, 17, ahead);
+        const pop = f.pop > .001 ? Math.sin(f.pop * Math.PI) * .6 : 0;
+        f.pop *= .93;
+        const s = f.s * (.28 + .72 * b + pop);
+        flowers.setMatrixAt(i, m4.compose(pos3.set(f.x, f.y + pop * .1, f.z), quat, scl3.set(s, s * .82, s)));
+      });
+      flowers.instanceMatrix.needsUpdate = true;
+    }
+
+    for (let i = 0; i < PN; i++) {
+      pp[i * 3] += (pv[i * 3] + Math.sin(t * .8 + i) * .25) * dt; pp[i * 3 + 1] += pv[i * 3 + 1] * dt;
+      if (pp[i * 3 + 1] < 0 || pp[i * 3 + 2] > camera.position.z + 1) seed(i, false);
+    }
+    petals.geometry.attributes.position.needsUpdate = true;
+
+    for (let k = bursts.length - 1; k >= 0; k--) {
+      const b = bursts[k]; b.age += dt;
+      const a = b.pts.geometry.attributes.position.array;
+      for (let i = 0; i < a.length; i += 3) { a[i] += b.vel[i] * dt; a[i + 1] += b.vel[i + 1] * dt; a[i + 2] += b.vel[i + 2] * dt; b.vel[i] *= .985; b.vel[i + 1] = b.vel[i + 1] * .985 + b.gravity * dt; b.vel[i + 2] *= .985; }
+      b.pts.geometry.attributes.position.needsUpdate = true;
+      b.pts.material.opacity = Math.max(0, 1 - b.age / b.life);
+      if (b.age > b.life) { scene.remove(b.pts); b.pts.geometry.dispose(); b.pts.material.dispose(); bursts.splice(k, 1); }
+    }
+    renderer.render(scene, camera);
+  });
+
+  return {
+    petalStorm() {
+      for (let k = 0; k < 4; k++) gsap.delayedCall(k * .25, () => burst(new THREE.Vector3((Math.random() - .5) * 4, 2.5, camera.position.z - 5), 120, petalColors, 4, -1.6, .16, 3, false));
+    }
+  };
+}
+</script>
+</body>
+</html>
