@@ -83,6 +83,13 @@ body.locked { overflow: hidden; }
 .btn:not(.ghost)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-120%); animation: sheen 4.5s ease-in-out infinite; pointer-events: none; }
 @keyframes sheen { 0%, 62% { transform: translateX(-120%); } 88%, 100% { transform: translateX(120%); } }
 @media (prefers-reduced-motion: reduce) { .btn:not(.ghost)::after { animation: none; } }
+.loader .enter { margin-top: 10px; opacity: 0; }
+.music { position: fixed; z-index: 5; right: max(14px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 14px); width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255, 250, 242, .7); background: rgba(58, 42, 31, .45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: flex-end; justify-content: center; gap: 3px; padding: 14px 0; box-sizing: border-box; cursor: pointer; }
+.music i { width: 3px; height: 25%; background: #fffaf2; border-radius: 2px; }
+.music.on i { animation: eq .8s ease-in-out infinite alternate; }
+.music.on i:nth-child(2) { animation-delay: -.3s; } .music.on i:nth-child(3) { animation-delay: -.55s; } .music.on i:nth-child(4) { animation-delay: -.15s; }
+@keyframes eq { from { height: 25%; } to { height: 100%; } }
+@media (prefers-reduced-motion: reduce) { .music.on i { animation: none; height: 70%; } }
 :focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; }
 </style>
 </head>
@@ -90,7 +97,8 @@ body.locked { overflow: hidden; }
 
 <canvas id="scene" aria-label="A 3D model of the White House venue at sunset"></canvas>
 <div class="progress" aria-hidden="true"><i id="prog"></i></div>
-<div class="loader" id="loader" aria-hidden="true"><div class="mono-l" id="loaderMono">K &amp; E</div><div class="bar"><i id="loaderBar"></i></div><small>Preparing the aisle</small></div>
+<div class="loader" id="loader" aria-hidden="true"><div class="mono-l" id="loaderMono">K &amp; E</div><div class="bar"><i id="loaderBar"></i></div><small id="loaderNote">Preparing the aisle</small><button class="btn enter" id="enterBtn" type="button" hidden>Open the invitation</button></div>
+<button class="music" id="musicBtn" type="button" aria-label="Pause music" hidden><i></i><i></i><i></i><i></i></button>
 <div class="cine-bar t" id="barT" aria-hidden="true"></div><div class="cine-bar b" id="barB" aria-hidden="true"></div>
 
 <main class="content">
@@ -172,7 +180,10 @@ const CONFIG = {
   icsUrl: "https://cdn.jsdelivr.net/gh/kareem-elgamal/XTop@61da08b9c07bdde18aeaf145c0bbf15031616192/wedding-invitation/wedding.ics",   // public copy of wedding.ics for iPhone
   mapQuery: "White House Venue, Mansouriya, Giza",
   rsvpBy: "5 March 2027",
-  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  whatsapp: "201123883249",
+  music: "",          // e.g. "music.mp3" placed beside this page; "" = no music
+  musicStart: 0,      // second where the favourite part starts
+  musicEnd: 0,        // second where it ends (0 = play to the end); the part loops   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
 };
 
@@ -262,6 +273,30 @@ const TAU = Math.PI * 2;
 let world = null;
 try { world = buildVenue(); } catch (err) { world = null; console.warn(err); }
 
+/* background music: one part of the song, faded in, looping, with a pause button */
+const music = (() => {
+  if (!CONFIG.music) return {};
+  const audio = new Audio(CONFIG.music); audio.preload = "auto"; audio.volume = 0;
+  const btn = $("#musicBtn"), from = CONFIG.musicStart || 0, to = CONFIG.musicEnd || 0;
+  let wanted = false;
+  const setUi = (on) => { btn.classList.toggle("on", on); btn.setAttribute("aria-label", on ? "Pause music" : "Play music"); };
+  const restart = () => { audio.currentTime = from; audio.play().catch(() => {}); };
+  audio.addEventListener("timeupdate", () => { if (to && audio.currentTime >= to) restart(); });
+  audio.addEventListener("ended", restart);
+  audio.addEventListener("error", () => { btn.hidden = true; wanted = false; });
+  audio.addEventListener("play", () => setUi(true)); audio.addEventListener("pause", () => setUi(false));
+  btn.addEventListener("click", () => { if (audio.paused) { wanted = true; audio.play().catch(() => {}); } else { wanted = false; audio.pause(); } });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) audio.pause(); else if (wanted) audio.play().catch(() => {}); });
+  return {
+    audio,
+    start() {
+      wanted = true; btn.hidden = false;
+      try { audio.currentTime = from; } catch (e) {}
+      audio.play().then(() => gsap.to(audio, { volume: .75, duration: 3 })).catch(() => setUi(false));
+    }
+  };
+})();
+
 /* opening: loader wipes away, drone flies in, names write themselves */
 (function intro() {
   document.body.classList.add("locked"); if (lenis) lenis.stop(); scrollTo(0, 0);
@@ -269,8 +304,13 @@ try { world = buildVenue(); } catch (err) { world = null; console.warn(err); }
   gsap.set([".ayah", "#dear", ".walk", ".names .amp"], { opacity: 0 });
   gsap.set(".names .ch", { opacity: 0 });
   const tl = gsap.timeline({ delay: .2 });
-  tl.to("#loaderBar", { width: "100%", duration: 1 * k, ease: "power2.inOut" })
-    .to("#loaderMono", { scale: 1.08, opacity: 0, duration: .5 * k }, "+=.05")
+  tl.to("#loaderBar", { width: "100%", duration: 1 * k, ease: "power2.inOut" });
+  if (music.audio) {                       // with music: wait for one tap so the browser lets it play
+    tl.add(() => { $("#loaderNote").textContent = "Turn your sound on"; $("#enterBtn").hidden = false; gsap.to("#enterBtn", { opacity: 1, y: 0, duration: .6 }); })
+      .addPause();
+    $("#enterBtn").addEventListener("click", () => { music.start(); tl.play(); }, { once: true });
+  }
+  tl.to("#loaderMono", { scale: 1.08, opacity: 0, duration: .5 * k }, "+=.05")
     .to("#loader", { clipPath: "inset(0 0 100% 0)", duration: 1.1 * k, ease: "power4.inOut" }, "<.1")
     .add(() => world && world.flyIn(3.8 * k), "<")
     .fromTo(".ayah", { y: 16, opacity: 0, filter: "blur(6px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 1.2 * k }, `>${2.2 * k}`)
