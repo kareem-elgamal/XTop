@@ -172,7 +172,8 @@ const CONFIG = {
   timeZone: "Africa/Cairo", durationHours: 5,
   timeText: "at seven in the evening", timeShort: "7:00 PM",
   venue: "White House Venue", address: "Mansouriya, Giza",
-  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansouriya, Giza",
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9",
+  icsUrl: "https://cdn.jsdelivr.net/gh/kareem-elgamal/XTop@61da08b9c07bdde18aeaf145c0bbf15031616192/wedding-invitation/wedding.ics",   // public copy of wedding.ics for iPhone mapQuery: "White House Venue, Mansouriya, Giza",
   rsvpBy: "5 March 2027",
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
@@ -192,8 +193,9 @@ $("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeri
 $("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
 $("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
 $("#mapLink").href = CONFIG.mapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
-/* Apple Calendar needs wedding.ics beside this page (works when self-hosted); hide the button if it is missing */
-fetch("wedding.ics", { method: "HEAD" }).then((r) => { if (!r.ok) throw 0; }).catch(() => { const a = document.getElementById("icsLink"); if (a) a.hidden = true; });
+/* Apple Calendar: wedding.ics beside this page when self-hosted, otherwise the public copy */
+$("#icsLink").href = CONFIG.icsUrl;
+fetch("wedding.ics", { method: "HEAD" }).then((r) => { if (r.ok) $("#icsLink").href = "wedding.ics"; }).catch(() => {});
 const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
 $("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
   + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
