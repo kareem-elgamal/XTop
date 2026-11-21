@@ -69,6 +69,20 @@ body { background: linear-gradient(#9fb4cf, #f6cfa9 60%, #7d9450) fixed, #f3d2b0
 .finale .btn { pointer-events: auto; background: rgba(255, 250, 242, .14); border-color: rgba(255, 250, 242, .7); color: #fffaf2; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .progress { position: fixed; z-index: 3; left: max(10px, env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); width: 3px; height: 120px; border-radius: 3px; background: rgba(255, 250, 242, .35); pointer-events: none; }
 .progress i { display: block; width: 100%; height: 0; border-radius: 3px; background: #fffaf2; }
+.loader { position: fixed; inset: 0; z-index: 10; background: #fffaf2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+.loader .mono-l { font: 400 4.6rem/1 var(--f-script); color: var(--wood); }
+.loader .bar { width: 140px; height: 1px; background: rgba(154, 102, 64, .25); overflow: hidden; }
+.loader .bar i { display: block; height: 100%; width: 0; background: var(--wood); }
+.loader small { font: 500 .66rem/1 var(--f-body); letter-spacing: .32em; text-transform: uppercase; color: var(--muted); }
+.cine-bar { position: fixed; left: 0; right: 0; height: 9svh; background: #120d0a; z-index: 4; pointer-events: none; }
+.cine-bar.t { top: 0; } .cine-bar.b { bottom: 0; }
+body.locked { overflow: hidden; }
+.dear { font: italic 500 1.35rem/1.2 var(--f-display); color: #fffaf2; margin: .9rem 0 -.3rem; text-shadow: 0 1px 10px rgba(80, 50, 30, .55); }
+.names .ch { display: inline-block; }
+.btn:not(.ghost) { position: relative; overflow: hidden; }
+.btn:not(.ghost)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-120%); animation: sheen 4.5s ease-in-out infinite; pointer-events: none; }
+@keyframes sheen { 0%, 62% { transform: translateX(-120%); } 88%, 100% { transform: translateX(120%); } }
+@media (prefers-reduced-motion: reduce) { .btn:not(.ghost)::after { animation: none; } }
 :focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; }
 </style>
 </head>
@@ -76,11 +90,14 @@ body { background: linear-gradient(#9fb4cf, #f6cfa9 60%, #7d9450) fixed, #f3d2b0
 
 <canvas id="scene" aria-label="A 3D model of the White House venue at sunset"></canvas>
 <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+<div class="loader" id="loader" aria-hidden="true"><div class="mono-l" id="loaderMono">K &amp; E</div><div class="bar"><i id="loaderBar"></i></div><small>Preparing the aisle</small></div>
+<div class="cine-bar t" id="barT" aria-hidden="true"></div><div class="cine-bar b" id="barB" aria-hidden="true"></div>
 
 <main class="content">
   <section class="stop top">
     <div class="wrap intro-copy">
       <p class="ayah" dir="rtl" lang="ar"><span data-k="verse"></span><cite>سورة الروم · ٢١</cite></p>
+      <p class="dear" id="dear" hidden></p>
       <h1 class="names"><span data-k="name1">Kareem</span><span class="amp">&amp;</span><span data-k="name2">Esraa</span></h1>
     </div>
     <div class="wrap intro-copy">
@@ -135,7 +152,14 @@ body { background: linear-gradient(#9fb4cf, #f6cfa9 60%, #7d9450) fixed, #f3d2b0
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script>
 /* ===== EDIT YOUR DETAILS HERE ===== */
 const CONFIG = {
@@ -145,7 +169,8 @@ const CONFIG = {
   timeZone: "Africa/Cairo", durationHours: 5,
   venue: "White House Venue", address: "Mansouriya, Giza",
   mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9",
-  icsUrl: "https://cdn.jsdelivr.net/gh/kareem-elgamal/XTop@61da08b9c07bdde18aeaf145c0bbf15031616192/wedding-invitation/wedding.ics",   // public copy of wedding.ics for iPhone mapQuery: "White House Venue, Mansouriya, Giza",
+  icsUrl: "https://cdn.jsdelivr.net/gh/kareem-elgamal/XTop@61da08b9c07bdde18aeaf145c0bbf15031616192/wedding-invitation/wedding.ics",   // public copy of wedding.ics for iPhone
+  mapQuery: "White House Venue, Mansouriya, Giza",
   rsvpBy: "5 March 2027",
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
@@ -196,11 +221,39 @@ $("#rsvp").addEventListener("submit", (e) => {
 });
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 if (!reduce) gsap.to("#wheel", { y: 5, opacity: 0, duration: 1.1, repeat: -1, ease: "power1.in" });
+
+/* personal link: add #Guest-Name to the end of the link */
+(() => {
+  let raw = ""; try { raw = decodeURIComponent((location.hash || "").slice(1)); } catch (e) {}
+  const guest = raw.replace(/[-_+]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!guest || guest.length > 40 || /[<>"]/.test(guest)) return;
+  const nice = guest.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  $("#dear").textContent = `Dear ${nice},`; $("#dear").hidden = false; $("#guestName").value = nice;
+})();
+
+/* split the names into letters for the reveal */
+document.querySelectorAll(".names [data-k]").forEach((el) => { el.innerHTML = [...el.textContent].map((c) => `<span class="ch">${c === " " ? "&nbsp;" : c}</span>`).join(""); });
+
+/* cards: tilt in, then their contents arrive in order */
+function countUp(el) {
+  const end = parseInt(el.textContent, 10); if (!(end > 0)) return;
+  const o = { v: 0 }; gsap.to(o, { v: end, duration: 1.4, ease: "power3.out", onUpdate: () => (el.textContent = String(Math.round(o.v)).padStart(2, "0")) });
+}
 const io = new IntersectionObserver((es) => es.forEach((en) => {
   if (!en.isIntersecting) return; io.unobserve(en.target);
-  gsap.fromTo(en.target, { y: 60, scale: .96, opacity: .3 }, { y: 0, scale: 1, opacity: 1, duration: 1, ease: "power3.out" });
-}), { threshold: .15 });
+  const card = en.target, kids = card.querySelectorAll(".eyebrow, h2, .date, .count > div, .venue-name, .muted, .program li, .form > *, .actions");
+  const tl = gsap.timeline();
+  tl.fromTo(card, { y: 90, rotateX: 14, opacity: 0, transformPerspective: 900, transformOrigin: "50% 100%" }, { y: 0, rotateX: 0, opacity: 1, duration: 1.1, ease: "power3.out" })
+    .from(kids, { y: 18, opacity: 0, duration: .6, stagger: .07, ease: "power2.out" }, .25);
+  const photo = card.querySelector(".photo");
+  if (photo) tl.fromTo(photo, { clipPath: "inset(0 0 100% 0 round 12px)", scale: 1.15 }, { clipPath: "inset(0 0 0% 0 round 12px)", scale: 1, duration: 1.3, ease: "power3.inOut" }, .2);
+  if (card.querySelector("#cD")) ["#cD", "#cH", "#cM"].forEach((s) => countUp($(s)));
+}), { threshold: .18 });
 document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+/* smooth scrolling (desktop wheel) */
+let lenis = null;
+try { if (window.Lenis && !reduce) { lenis = new Lenis({ lerp: .085 }); gsap.ticker.add((time) => lenis.raf(time * 1000)); gsap.ticker.lagSmoothing(0); } } catch (e) { lenis = null; }
 
 /* =========================================================
    THE VENUE IN 3D
@@ -208,6 +261,27 @@ document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 const TAU = Math.PI * 2;
 let world = null;
 try { world = buildVenue(); } catch (err) { world = null; console.warn(err); }
+
+/* opening: loader wipes away, drone flies in, names write themselves */
+(function intro() {
+  document.body.classList.add("locked"); if (lenis) lenis.stop(); scrollTo(0, 0);
+  const k = reduce ? .25 : 1;
+  gsap.set([".ayah", "#dear", ".walk", ".names .amp"], { opacity: 0 });
+  gsap.set(".names .ch", { opacity: 0 });
+  const tl = gsap.timeline({ delay: .2 });
+  tl.to("#loaderBar", { width: "100%", duration: 1 * k, ease: "power2.inOut" })
+    .to("#loaderMono", { scale: 1.08, opacity: 0, duration: .5 * k }, "+=.05")
+    .to("#loader", { clipPath: "inset(0 0 100% 0)", duration: 1.1 * k, ease: "power4.inOut" }, "<.1")
+    .add(() => world && world.flyIn(3.8 * k), "<")
+    .fromTo(".ayah", { y: 16, opacity: 0, filter: "blur(6px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 1.2 * k }, `>${2.2 * k}`)
+    .fromTo("#dear", { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: .8 * k }, "<.3")
+    .fromTo(".names .ch", { yPercent: 70, opacity: 0, rotate: 8, filter: "blur(10px)" }, { yPercent: 0, opacity: 1, rotate: 0, filter: "blur(0px)", duration: 1.1 * k, stagger: .06 * k, ease: "power3.out" }, "<.2")
+    .fromTo(".names .amp", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: .8 * k, ease: "back.out(2.2)" }, "<.5")
+    .to("#barT", { yPercent: -100, duration: 1 * k, ease: "power3.inOut" }, "<")
+    .to("#barB", { yPercent: 100, duration: 1 * k, ease: "power3.inOut" }, "<")
+    .fromTo(".walk", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: .8 * k }, "<.4")
+    .add(() => { document.body.classList.remove("locked"); if (lenis) lenis.start(); $("#loader").remove(); });
+})();
 
 function cvs(w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; }
 function dot(stops) { const [c, g] = cvs(64, 64), r = g.createRadialGradient(32, 32, 0, 32, 32, 32); stops.forEach(([o, col]) => r.addColorStop(o, col)); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); }
@@ -311,6 +385,18 @@ function buildVenue() {
   const leaves = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), std(0x4f6e32, { flatShading: true }), Math.floor(F.length / 3));
   for (let i = 0; i < leaves.count; i++) { const f = F[i * 3]; m4.compose(new THREE.Vector3(f.x + (Math.random() - .5) * .15, f.y - .06, f.z), new THREE.Quaternion(), new THREE.Vector3(f.s * 1.3, f.s * .8, f.s * 1.3)); leaves.setMatrixAt(i, m4); }
   scene.add(leaves);
+  const windU = { value: 0 };
+  const addWind = (mat, amp) => { mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uWind = windU;
+    sh.vertexShader = "uniform float uWind;\n" + sh.vertexShader.replace("#include <begin_vertex>", `#include <begin_vertex>
+    #ifdef USE_INSTANCING
+      vec3 ip = vec3(instanceMatrix[3][0], instanceMatrix[3][1], instanceMatrix[3][2]);
+      float sway = sin(uWind * 1.7 + ip.x * 1.3 + ip.z * .9) + .5 * sin(uWind * 3.1 + ip.z * 2.3);
+      transformed.x += sway * ${amp} * (position.y + 1.0);
+      transformed.z += cos(uWind * 1.3 + ip.x + ip.z * .4) * ${amp} * .5 * (position.y + 1.0);
+    #endif`);
+  }; };
+  addWind(flowers.material, ".16"); addWind(leaves.material, ".1");
 
   /* ---- tables and chairs ---- */
   const woodMat = std(0x9a6a44, { roughness: .7 });
@@ -380,6 +466,13 @@ function buildVenue() {
   const lightsMat = new THREE.PointsMaterial({ size: .22, map: lampTex, color: 0xffd59a, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
   scene.add(new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(bulbs, 3)), lightsMat));
 
+  /* ---- fireflies at dusk ---- */
+  const FFN = 150, ffBase = new Float32Array(FFN * 4), ffp = new Float32Array(FFN * 3);
+  for (let i = 0; i < FFN; i++) { ffBase[i * 4] = (Math.random() - .5) * 18; ffBase[i * 4 + 1] = .4 + Math.random() * 2.2; ffBase[i * 4 + 2] = 6 - Math.random() * 54; ffBase[i * 4 + 3] = Math.random() * TAU; }
+  const ffMat = new THREE.PointsMaterial({ size: .13, map: lampTex, color: 0xfff1a8, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+  const fireflies = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(ffp, 3)), ffMat);
+  fireflies.frustumCulled = false; scene.add(fireflies);
+
   /* ---- falling petals ---- */
   const petalTex = (() => { const [c, g] = cvs(64, 64), r = g.createRadialGradient(32, 32, 2, 32, 32, 30); r.addColorStop(0, "rgba(255,236,232,1)"); r.addColorStop(.7, "rgba(244,180,180,.95)"); r.addColorStop(1, "rgba(244,180,180,0)"); g.fillStyle = r; g.beginPath(); g.ellipse(32, 32, 30, 18, .6, 0, TAU); g.fill(); return new THREE.CanvasTexture(c); })();
   const PN = 260, pp = new Float32Array(PN * 3), pv = new Float32Array(PN * 3);
@@ -407,8 +500,9 @@ function buildVenue() {
   const fireColors = [[0xffd58a, 0xfff2d0], [0xf7a8b8, 0xffe0ea], [0xcfe0ff, 0xffffff], [0xffc07a, 0xff8a6a]];
   let lit = false;
   function lightHouse() {
-    gsap.to(winMat, { emissiveIntensity: 2.2, duration: .8 });
-    gsap.to(porch, { intensity: 2.5, duration: .8 });
+    flash = .9;
+    gsap.to(winMat, { emissiveIntensity: 1.5, duration: .8 });
+    gsap.to(porch, { intensity: 1.6, duration: .8 });
     lamps.forEach((l) => gsap.to(l.material, { opacity: 1, duration: .8 }));
     for (let k = 0; k < 7; k++) gsap.delayedCall(k * .45 + (lit ? 0 : .5), () => {
       const at = new THREE.Vector3((Math.random() - .5) * 14, 10 + Math.random() * 6, HOUSE_Z - 4 - Math.random() * 8);
@@ -434,9 +528,33 @@ function buildVenue() {
   $("#lightBtn").addEventListener("click", lightHouse);
 
   /* ---- scroll walks the camera ---- */
-  const state = { p: 0, z: START_Z, dusk: 0 };
+  const state = { p: 0, z: START_Z, x: 0, dusk: 0 };
+  const cine = { k: 0 }, droneLook = new THREE.Vector3(0, 0, -14), lookNow = new THREE.Vector3(), walkPos = new THREE.Vector3();
   const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  function resize() { camera.aspect = innerWidth / innerHeight; camera.fov = camera.aspect < .7 ? 62 : 50; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); }
+  /* ---- post: soft bloom, then a film pass (vignette, grain, edge fringe, warm grade) ---- */
+  const composer = new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene, camera));
+  const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .05, .45, .97);
+  composer.addPass(bloom);
+  const film = new THREE.ShaderPass({
+    uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uVig: { value: .32 }, uGrain: { value: .035 } },
+    vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime, uVig, uGrain; varying vec2 vUv;
+      void main(){
+        vec2 d = vUv - .5; float r = length(d);
+        vec2 off = d * r * .006;
+        vec3 c = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
+        c *= mix(1. - uVig, 1., smoothstep(.85, .25, r));
+        float n = fract(sin(dot(vUv * (uTime + 1.), vec2(12.9898, 78.233))) * 43758.5453);
+        c += (n - .5) * uGrain;
+        c = mix(c, c * vec3(1.04, 1., .95), .6);
+        gl_FragColor = vec4(c, 1.);
+      }`
+  });
+  composer.addPass(film);
+  let flash = 0;
+
+  function resize() { camera.aspect = innerWidth / innerHeight; camera.fov = camera.aspect < .7 ? 62 : 50; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); composer.setSize(innerWidth, innerHeight); }
   resize(); addEventListener("resize", resize);
 
   const pos3 = new THREE.Vector3(), scl3 = new THREE.Vector3(), quat = new THREE.Quaternion();
@@ -448,11 +566,17 @@ function buildVenue() {
     $("#prog").style.height = (state.p * 100) + "%";
     const targetZ = START_Z + (END_Z - START_Z) * smooth(0, 1, state.p);
     state.z += (targetZ - state.z) * (reduce ? 1 : .06);
-    camera.position.z = state.z;
-    camera.position.y = 1.7 + Math.sin(state.z * 1.6) * .025;              // soft footsteps
-    camera.position.x += ((pointer.x * .5) - camera.position.x) * .04;
+    state.x += ((pointer.x * .5) - state.x) * .04;
+    walkPos.set(state.x, 1.7 + Math.sin(state.z * 1.6) * .025, state.z);          // soft footsteps
     look.set(pointer.x * 3, 2.4 - pointer.y * 1.2, HOUSE_Z);
-    camera.lookAt(look);
+    const kk = cine.k;
+    if (kk < 1) {                                                                 // drone shot flying in
+      camera.position.set(-9 + (walkPos.x + 9) * kk + Math.sin(kk * Math.PI) * 6, 17 + (walkPos.y - 17) * kk, 34 + (walkPos.z - 34) * kk);
+      camera.lookAt(lookNow.copy(droneLook).lerp(look, kk));
+    } else {
+      camera.position.copy(walkPos); camera.lookAt(look);
+      camera.rotateZ(Math.sin(state.z * .8) * .004);                              // a little sway while walking
+    }
 
     const dusk = smooth(.35, .92, state.p);
     skyU.uDusk.value = dusk;
@@ -491,10 +615,22 @@ function buildVenue() {
       b.pts.material.opacity = Math.max(0, 1 - b.age / b.life);
       if (b.age > b.life) { scene.remove(b.pts); b.pts.geometry.dispose(); b.pts.material.dispose(); bursts.splice(k, 1); }
     }
-    renderer.render(scene, camera);
+    windU.value = t;
+    for (let i = 0; i < FFN; i++) {
+      const ph = ffBase[i * 4 + 3];
+      ffp[i * 3] = ffBase[i * 4] + Math.sin(t * .5 + ph) * .8; ffp[i * 3 + 1] = ffBase[i * 4 + 1] + Math.sin(t * .9 + ph * 2) * .35; ffp[i * 3 + 2] = ffBase[i * 4 + 2] + Math.cos(t * .4 + ph) * .8;
+    }
+    fireflies.geometry.attributes.position.needsUpdate = true;
+    ffMat.opacity = smooth(.5, .85, state.p) * (.75 + .25 * Math.sin(t * 2.3));
+    flash *= .92;
+    bloom.strength = .05 + dusk * .38 + flash * .5;
+    bloom.highPassUniforms.luminosityThreshold.value = .97 - dusk * .22;
+    film.uniforms.uTime.value = t % 100;
+    composer.render();
   });
 
   return {
+    flyIn(d) { gsap.to(cine, { k: 1, duration: d, ease: "power2.inOut" }); },
     petalStorm() {
       for (let k = 0; k < 4; k++) gsap.delayedCall(k * .25, () => burst(new THREE.Vector3((Math.random() - .5) * 4, 2.5, camera.position.z - 5), 120, petalColors, 4, -1.6, .16, 3, false));
     }
