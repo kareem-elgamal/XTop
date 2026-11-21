@@ -1,0 +1,27 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kareem and Esraa//Wedding Invitation//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:kareem-esraa-wedding-20270319@wedding-invitation
+DTSTAMP:20261121T000000Z
+DTSTART:20270319T170000Z
+DTEND:20270319T220000Z
+SUMMARY:Kareem & Esraa — Wedding
+LOCATION:White House Venue\, Mansouriya\, Giza
+DESCRIPTION:Kareem & Esraa's wedding.\nDirections: https://maps.app.goo.gl
+ /VbhpM8e1Pi99nuis9
+URL:https://maps.app.goo.gl/VbhpM8e1Pi99nuis9
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:Kareem & Esraa's wedding is tomorrow
+END:VALARM
+BEGIN:VALARM
+TRIGGER:-PT3H
+ACTION:DISPLAY
+DESCRIPTION:Kareem & Esraa's wedding starts in 3 hours
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -114,7 +114,7 @@ footer p { margin: .4rem 0 0; letter-spacing: .3em; font: .72rem var(--f-body); 
     <p class="venue-name" data-c="venue"></p>
     <p class="muted" data-c="address" style="margin: .3rem 0 0"></p>
     <ul class="program" id="program"></ul>
-    <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener" data-i="directions"></a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener" data-i="calendar"></a></div>
+    <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener" data-i="directions"></a><a class="btn ghost" id="icsLink" href="wedding.ics" target="_blank" rel="noopener" data-i="apple"></a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener" data-i="google"></a></div>
   </div></div></section>
 
   <section class="s"><div class="wrap"><div class="card">
@@ -142,7 +142,8 @@ const CONFIG = {
   name1: "Kareem", name2: "Esraa",
   verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // Quran 30:21; set to "" to hide
   name1Ar: "كريم", name2Ar: "إسراء",
-  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  date: "2027-03-19T19:00:00+02:00",   // if you change date/venue, update wedding.ics too
+  timeZone: "Africa/Cairo", durationHours: 5,
   venue: { ar: "وايت هاوس", en: "White House Venue" },
   address: { ar: "المنصورية، الجيزة", en: "Mansouriya, Giza" },
   mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansouriya, Giza",
@@ -157,13 +158,13 @@ const CONFIG = {
 const T = {
   ar: { countEyebrow: "العد التنازلي", countTitle: "حتى يوم فرحنا", days: "يوم", hours: "ساعة", minutes: "دقيقة", seconds: "ثانية",
         countNote: "في انتظاركم لنحتفل معًا.", countDone: "اليوم يوم فرحنا. شكرًا لمشاركتكم.",
-        venueEyebrow: "مكان الحفل", venueTitle: "أين ومتى", directions: "الاتجاهات", calendar: "أضف للتقويم",
+        venueEyebrow: "مكان الحفل", venueTitle: "أين ومتى", directions: "الاتجاهات", apple: "تقويم آيفون", google: "تقويم جوجل",
         rsvpEyebrow: "تأكيد الحضور", rsvpTitle: "هل ستشاركوننا؟", replyBy: "برجاء الرد قبل", yourName: "الاسم", guests: "عدد الحضور",
         accept: "سأحضر بكل سرور", decline: "أعتذر عن الحضور", namePh: "مثال: مريم عادل",
         thanksYes: (n) => `في انتظارك يا ${n}!`, thanksNo: (n) => `سنفتقدك يا ${n}.`, wa: "أرسل على واتساب" },
   en: { countEyebrow: "The countdown", countTitle: "Until our day", days: "Days", hours: "Hours", minutes: "Minutes", seconds: "Seconds",
         countNote: "We can't wait to celebrate with you.", countDone: "The day is here. Thank you for celebrating with us.",
-        venueEyebrow: "The celebration", venueTitle: "Where & when", directions: "Get directions", calendar: "Add to calendar",
+        venueEyebrow: "The celebration", venueTitle: "Where & when", directions: "Get directions", apple: "Apple Calendar", google: "Google Calendar",
         rsvpEyebrow: "RSVP", rsvpTitle: "Will you join us?", replyBy: "Kindly reply by", yourName: "Your name", guests: "Number of guests",
         accept: "Joyfully accept", decline: "Regretfully decline", namePh: "e.g. Mariam Adel",
         thanksYes: (n) => `See you there, ${n}!`, thanksNo: (n) => `We'll miss you, ${n}.`, wa: "Send on WhatsApp" }
@@ -184,6 +185,8 @@ $("#dateAr").textContent = fmt("ar-EG", { weekday: "long", day: "numeric", month
 $("#dateEn").textContent = fmt("en-GB", { weekday: "long" }) + " · " + fmt("en-GB", { day: "numeric", month: "long", year: "numeric" }) + " · " + CONFIG.program[0].time.en;
 $("#dShort").textContent = fmt("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
 $("#mapLink").href = CONFIG.mapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+/* Apple Calendar needs wedding.ics beside this page (works when self-hosted); hide the button if it is missing */
+fetch("wedding.ics", { method: "HEAD" }).then((r) => { if (!r.ok) throw 0; }).catch(() => { const a = document.getElementById("icsLink"); if (a) a.hidden = true; });
 const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
 $("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
   + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
