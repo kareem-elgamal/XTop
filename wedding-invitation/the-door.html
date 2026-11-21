@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Door Invitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Gilda+Display&family=Great+Vibes&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* Layout: one fixed Three.js world (a lattice door, a candlelit courtyard, two rings in the sky);
+   a thin overlay of hints guides each gesture, then invitation cards scroll over the petals. One dark look. */
+:root {
+  --bg: #061918; --fg: #f5ecdc; --muted: #a9c0b8; --gold: #e2b866; --gold-hi: #f7dca0; --blush: #f0b8b0;
+  --on-gold: #1d1406; --line: rgba(226, 184, 102, .3); --card: rgba(6, 25, 24, .7); --field: rgba(255, 255, 255, .05);
+  --f-display: "Gilda Display", "Didot", Georgia, serif;
+  --f-script: "Great Vibes", "Snell Roundhand", cursive;
+  --f-ar: "Amiri", "Geeza Pro", serif;
+  --f-body: "Jost", "Avenir Next", system-ui, sans-serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); overflow: hidden; }
+body.open { overflow-y: auto; }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; touch-action: none; }
+
+/* gesture overlay */
+.stage { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+.stage button, .stage a { pointer-events: auto; }
+.skip { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: max(12px, env(safe-area-inset-right, 0px)); appearance: none; border: 1px solid var(--line); background: rgba(6, 25, 24, .55); color: var(--muted); font: 400 .7rem/1 var(--f-body); letter-spacing: .2em; text-transform: uppercase; padding: 0 14px; min-height: 40px; border-radius: 999px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.panel { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 26px); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.verse { font: 400 1.05rem/1.9 var(--f-ar); color: var(--gold-hi); margin: 0; max-width: 24rem; text-wrap: balance; }
+.who { font: 400 2.4rem/1 var(--f-script); color: var(--fg); margin: 0; }
+.hint { display: inline-flex; align-items: center; gap: 10px; font: 400 .74rem/1.3 var(--f-body); letter-spacing: .22em; text-transform: uppercase; color: var(--fg); margin: 0; }
+.hint b { font-weight: 500; color: var(--gold); letter-spacing: .1em; }
+.hand { width: 26px; height: 26px; }
+.alt { appearance: none; border: 0; background: none; color: var(--muted); text-decoration: underline; font: 400 .82rem var(--f-body); min-height: 40px; cursor: pointer; }
+.labels { position: absolute; inset: 0; }
+.label { position: absolute; left: 0; top: 0; white-space: nowrap; text-align: center; opacity: 0; }
+.label small { display: block; font: 400 .62rem/1.4 var(--f-body); letter-spacing: .26em; text-transform: uppercase; color: var(--gold); }
+.label span { font: 400 1.15rem/1.3 var(--f-display); color: var(--fg); text-shadow: 0 2px 14px rgba(0, 0, 0, .8); }
+
+/* invitation */
+.content { position: relative; z-index: 1; }
+.wrap { max-width: 34rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.eyebrow { font: 400 .72rem/1.4 var(--f-body); letter-spacing: .32em; text-transform: uppercase; color: var(--gold); margin: 0; }
+.hero { min-height: 100svh; box-sizing: border-box; padding-top: 47svh; padding-bottom: 3rem; text-align: center; }
+.names { font: 400 clamp(3.6rem, 16vw, 5.6rem)/1 var(--f-script); color: var(--gold-hi); margin: .4rem 0 .2rem; text-shadow: 0 4px 30px rgba(0, 0, 0, .6); }
+.names .amp { display: block; font: 400 .4em/1.2 var(--f-display); color: var(--gold); }
+.lede { color: var(--muted); max-width: 25rem; margin: .6rem auto 0; text-wrap: balance; }
+.date { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin: 1.8rem auto .4rem; max-width: 22rem; }
+.date .side { font-size: .76rem; letter-spacing: .26em; text-transform: uppercase; border-block: 1px solid var(--line); padding-block: .7rem; }
+.date .day { font: 400 3.2rem/1 var(--f-display); color: var(--gold-hi); }
+.time { font: 400 1.6rem/1.2 var(--f-script); color: var(--gold); margin: 0; }
+.cue { margin-top: 2rem; font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+.cue::after { content: ""; display: block; width: 1px; height: 36px; margin: .7rem auto 0; background: linear-gradient(var(--gold), transparent); }
+section.s { padding-block: 3.4rem; text-align: center; }
+.s h2 { font: 400 clamp(2.4rem, 10vw, 3.2rem)/1.1 var(--f-script); color: var(--gold-hi); margin: .4rem 0 1.4rem; text-wrap: balance; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 2.2rem 1.4rem; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.count div { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.count b { font: 400 clamp(2rem, 9vw, 2.7rem)/1 var(--f-display); font-variant-numeric: tabular-nums; display: inline-block; }
+.count span, .form label { font-size: .62rem; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.venue-name { font: 400 1.7rem/1.2 var(--f-display); margin: 0; }
+.program { list-style: none; padding: 0; margin: 1.4rem auto 1.8rem; max-width: 19rem; text-align: left; }
+.program li { display: grid; grid-template-columns: 5.2rem 1fr; gap: .8rem; padding-block: .65rem; border-bottom: 1px solid var(--line); }
+.program li:last-child { border-bottom: 0; }
+.program time { color: var(--gold); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center; }
+.btn { appearance: none; cursor: pointer; text-decoration: none; font: 400 .74rem/1 var(--f-body); letter-spacing: .2em; text-transform: uppercase; padding: 0 1.3rem; min-height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--gold); color: var(--on-gold); background: var(--gold); }
+.btn.ghost { background: transparent; color: var(--fg); }
+.form { display: grid; gap: .8rem; text-align: left; margin-top: 1.4rem; }
+.field { width: 100%; box-sizing: border-box; font: 300 1rem/1.4 var(--f-body); color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 4px; padding: .85rem 1rem; }
+.done { margin: 1.2rem 0 0; font: 400 2rem/1.3 var(--f-script); color: var(--gold-hi); }
+footer { text-align: center; padding-block: 3rem 5rem; color: var(--muted); }
+footer .mono { font: 400 2.8rem/1 var(--f-script); color: var(--gold); }
+footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
+:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+</style>
+</head>
+<body>
+
+<canvas id="scene" aria-label="An interactive invitation scene"></canvas>
+
+<div class="stage" id="stage">
+  <button class="skip" id="skipBtn" type="button">Skip</button>
+
+  <div class="panel" id="p1">
+    <p class="verse" dir="rtl" lang="ar" data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا</p>
+    <p class="who"><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span></p>
+    <p class="hint"><svg class="hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"></path></svg>Swipe to open the door</p>
+    <button class="alt" id="openBtn" type="button">or tap here</button>
+  </div>
+
+  <div class="labels" id="labels" aria-live="polite"></div>
+  <div class="panel" id="p2" hidden>
+    <p class="hint">Tap each candle to light it · <b id="litCount">0 / 3</b></p>
+    <button class="alt" id="lightBtn" type="button">Light them for me</button>
+  </div>
+
+  <div class="panel" id="p3" hidden>
+    <p class="hint"><svg class="hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5M12 10V4a1.5 1.5 0 0 1 3 0v6M15 10V6a1.5 1.5 0 0 1 3 0v7a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.5 13a1.5 1.5 0 0 1 2.4-1.8L9 14"></path></svg>Drag her ring onto his</p>
+    <button class="alt" id="joinBtn" type="button">Join them for me</button>
+  </div>
+</div>
+
+<main class="content" id="content" hidden>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow r">Together with their families</p>
+      <h1 class="names r"><span data-k="name1">Kareem</span><span class="amp">&amp;</span><span data-k="name2">Esraa</span></h1>
+      <p class="lede r">invite you to celebrate their wedding</p>
+      <div class="date r"><span class="side" id="dWeekday">Friday</span><span class="day" id="dDay">19</span><span class="side" id="dMonth">March 2027</span></div>
+      <p class="time r" data-k="timeText">at seven in the evening</p>
+      <div class="cue r">Scroll</div>
+    </div>
+  </section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">The countdown</p>
+    <h2>Until our day</h2>
+    <div class="count" role="timer"><div><b id="cD">00</b><span>Days</span></div><div><b id="cH">00</b><span>Hours</span></div><div><b id="cM">00</b><span>Minutes</span></div><div><b id="cS">00</b><span>Seconds</span></div></div>
+    <p class="muted" id="countNote" style="margin: 1.4rem 0 0">We can't wait to celebrate with you.</p>
+  </div></div></section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">The celebration</p>
+    <h2>Where &amp; when</h2>
+    <p class="venue-name" data-k="venue">The Garden Hall</p>
+    <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+    <ul class="program" id="program"></ul>
+    <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
+  </div></div></section>
+
+  <section class="s"><div class="wrap"><div class="card">
+    <p class="eyebrow">RSVP</p>
+    <h2>Will you join us?</h2>
+    <p class="muted" style="margin: 0">Kindly reply by <span data-k="rsvpBy">5 March 2027</span>.</p>
+    <form class="form" id="rsvp">
+      <label for="guestName">Your name</label>
+      <input class="field" id="guestName" autocomplete="name" placeholder="e.g. Mariam Adel" required>
+      <label for="guestCount">Number of guests</label>
+      <select class="field" id="guestCount"><option>1</option><option>2</option><option>3</option><option>4</option></select>
+      <div class="actions"><button class="btn" type="submit" value="yes">Joyfully accept</button><button class="btn ghost" type="submit" value="no">Regretfully decline</button></div>
+    </form>
+    <p class="done" id="rsvpDone" hidden></p>
+  </div></div></section>
+
+  <footer><div class="mono" id="mono">K &amp; E</div><p id="dShort">19 · 03 · 2027</p></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ===== EDIT YOUR DETAILS HERE ===== */
+const CONFIG = {
+  name1: "Kareem", name2: "Esraa",
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا",   // set to "" to hide
+  date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
+  timeText: "at seven in the evening", timeShort: "7:00 PM",
+  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo",
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
+  rsvpBy: "5 March 2027",
+  whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
+  program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
+};
+
+/* ===== shared invitation logic ===== */
+const $ = (s) => document.querySelector(s);
+const when = new Date(CONFIG.date);
+const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
+document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+if (!CONFIG.verse) $(".verse").hidden = true;
+$("#dWeekday").textContent = fmt({ weekday: "long" });
+$("#dDay").textContent = fmt({ day: "numeric" });
+$("#dMonth").textContent = fmt({ month: "long", year: "numeric" });
+$("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
+$("#mono").textContent = CONFIG.name1[0] + " & " + CONFIG.name2[0];
+$("#program").innerHTML = CONFIG.program.map(([t, w]) => `<li><time>${t}</time><span>${w}</span></li>`).join("");
+$("#mapLink").href = CONFIG.mapUrl || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(CONFIG.mapQuery);
+const gcal = (d) => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+$("#calLink").href = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`${CONFIG.name1} & ${CONFIG.name2} — Wedding`)
+  + "&dates=" + gcal(when) + "/" + gcal(new Date(when.getTime() + CONFIG.durationHours * 3600e3))
+  + "&location=" + encodeURIComponent(CONFIG.venue + ", " + CONFIG.address);
+const pad = (n) => String(n).padStart(2, "0");
+let lastSec = -1;
+function updateCount() {
+  const s = Math.floor((when - Date.now()) / 1000);
+  if (s <= 0) { $("#countNote").textContent = "The day is here. Thank you for celebrating with us."; return; }
+  $("#cD").textContent = pad(Math.floor(s / 86400)); $("#cH").textContent = pad(Math.floor(s / 3600) % 24);
+  $("#cM").textContent = pad(Math.floor(s / 60) % 60); $("#cS").textContent = pad(s % 60);
+  if (lastSec !== -1 && !$("#content").hidden) gsap.fromTo("#cS", { rotationX: -90, opacity: .2 }, { rotationX: 0, opacity: 1, duration: .45, ease: "back.out(2)" });
+  lastSec = s;
+}
+updateCount(); setInterval(updateCount, 1000);
+$("#rsvp").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const yes = e.submitter ? e.submitter.value === "yes" : true;
+  const name = $("#guestName").value.trim(), n = $("#guestCount").value;
+  const done = $("#rsvpDone");
+  done.textContent = yes ? `See you there, ${name}!` : `We'll miss you, ${name}.`;
+  done.hidden = false; e.target.hidden = true;
+  if (yes && world) world.celebrate();
+  if (CONFIG.whatsapp) {
+    const msg = yes ? `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. We'll be there! Guests: ${n}` : `Hi ${CONFIG.name1} & ${CONFIG.name2}, this is ${name}. Sadly we can't make it, but we're sending our love.`;
+    const a = Object.assign(document.createElement("a"), { href: `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, target: "_blank", rel: "noopener", className: "btn", textContent: "Send on WhatsApp" });
+    a.style.marginTop = "1rem"; done.after(a);
+  }
+});
+
+/* =========================================================
+   THE WORLD: door → candles → rings → petals
+   ========================================================= */
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const K = reduce ? .35 : 1;
+const TAU = Math.PI * 2;
+let world = null, chapter = 1;
+
+function cvs(w, h) { const c = document.createElement("canvas"); c.width = w; c.height = h; return [c, c.getContext("2d")]; }
+function radialTex(stops, w = 64, h = 64) {
+  const [c, g] = cvs(w, h), r = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.min(w, h) / 2);
+  stops.forEach(([o, col]) => r.addColorStop(o, col)); g.fillStyle = r; g.fillRect(0, 0, w, h);
+  return new THREE.CanvasTexture(c);
+}
+function star8(g, x, y, r) {
+  for (let k = 0; k < 2; k++) {
+    g.beginPath();
+    for (let i = 0; i < 4; i++) { const a = k * Math.PI / 4 + Math.PI / 4 + i * Math.PI / 2; g[i ? "lineTo" : "moveTo"](x + Math.cos(a) * r, y + Math.sin(a) * r); }
+    g.closePath(); g.stroke();
+  }
+  g.beginPath(); g.arc(x, y, r * .28, 0, TAU); g.stroke();
+}
+function latticeTextures(w, h, cell) {
+  const [c, g] = cvs(w, h), [cg, gg] = cvs(w, h);
+  g.fillStyle = "#0d3534"; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 160; i++) { g.strokeStyle = `rgba(0,0,0,${Math.random() * .18})`; g.lineWidth = 1 + Math.random() * 2; const x = Math.random() * w; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + (Math.random() - .5) * 20, h); g.stroke(); }
+  gg.fillStyle = "#000"; gg.fillRect(0, 0, w, h);
+  [[g, "#d9b56a"], [gg, "#c8963e"]].forEach(([ctx, col]) => {
+    ctx.strokeStyle = col; ctx.lineWidth = 10; ctx.strokeRect(22, 22, w - 44, h - 44);
+    ctx.lineWidth = 3; ctx.strokeRect(42, 42, w - 84, h - 84);
+    ctx.lineWidth = 3.2;
+    for (let y = 60 + cell / 2; y < h - 50; y += cell) for (let x = 60 + cell / 2; x < w - 50; x += cell) star8(ctx, x, y, cell * .42);
+  });
+  return { map: new THREE.CanvasTexture(c), glow: new THREE.CanvasTexture(cg) };
+}
+
+try { world = buildWorld(); } catch (err) { world = null; console.warn(err); }
+if (!world) { document.querySelectorAll(".stage .panel").forEach((p) => (p.hidden = true)); showInvitation(); }
+
+function buildWorld() {
+  const canvas = $("#scene");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x061918);
+  scene.fog = new THREE.Fog(0x061918, 9, 34);
+  const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, .1, 120);
+  const look = new THREE.Vector3(0, .4, 0);
+  const tanH = Math.tan(THREE.MathUtils.degToRad(22.5));
+  const doorZ = () => Math.max(9, 1.95 / (tanH * camera.aspect));
+  camera.position.set(0, .3, doorZ());
+
+  scene.add(new THREE.AmbientLight(0x9fd0c8, .22));
+  const moon = new THREE.DirectionalLight(0xbfe3ff, .35); moon.position.set(-4, 8, 6); scene.add(moon);
+
+  // ---------- ring environment for metal reflections ----------
+  const envScene = new THREE.Scene();
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(10, 24, 12), new THREE.MeshBasicMaterial({ color: 0x1d4a46, side: THREE.BackSide }));
+  envScene.add(dome);
+  [[0, 6, 4, 4], [-7, 1, 2, 2.4], [7, -1, -3, 1.8]].forEach(([x, y, z, k]) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k * .88, k * .7), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0, 0); envScene.add(m);
+  });
+  const envMap = new THREE.PMREMGenerator(renderer).fromScene(envScene, .03).texture;
+
+  // ---------- chapter 1: the wall and the lattice door ----------
+  const wallShape = new THREE.Shape();
+  wallShape.moveTo(-20, -2.2); wallShape.lineTo(20, -2.2); wallShape.lineTo(20, 14); wallShape.lineTo(-20, 14); wallShape.lineTo(-20, -2.2);
+  const hole = new THREE.Path();
+  hole.moveTo(-1.6, -1.79); hole.lineTo(1.6, -1.79); hole.lineTo(1.6, 1.8); hole.absarc(0, 1.8, 1.6, 0, Math.PI, false); hole.lineTo(-1.6, -1.79);
+  wallShape.holes.push(hole);
+  const wallTex = latticeTextures(512, 512, 128);
+  wallTex.map.wrapS = wallTex.map.wrapT = THREE.RepeatWrapping; wallTex.map.repeat.set(.12, .12);
+  const wall = new THREE.Mesh(new THREE.ShapeGeometry(wallShape, 24), new THREE.MeshStandardMaterial({ color: 0x2c4d49, map: wallTex.map, roughness: .9 }));
+  scene.add(wall);
+
+  const doorTex = latticeTextures(512, 1152, 104);
+  const doorMat = new THREE.MeshStandardMaterial({ map: doorTex.map, emissive: 0xffffff, emissiveMap: doorTex.glow, emissiveIntensity: .14, roughness: .55, metalness: .2 });
+  const panelGeo = new THREE.BoxGeometry(1.6, 3.6, .1);
+  const pivotL = new THREE.Group(), pivotR = new THREE.Group();
+  pivotL.position.set(-1.6, 0, .02); pivotR.position.set(1.6, 0, .02);
+  const doorL = new THREE.Mesh(panelGeo, doorMat); doorL.position.x = .8; pivotL.add(doorL);
+  const doorR = new THREE.Mesh(panelGeo, doorMat); doorR.position.x = -.8; doorR.scale.x = -1; pivotR.add(doorR);
+  scene.add(pivotL, pivotR);
+  const gold = new THREE.MeshStandardMaterial({ color: 0xe6bd6e, metalness: 1, roughness: .25, envMap, emissive: 0x3a2508, emissiveIntensity: .4 });
+  const archTrim = new THREE.Mesh(new THREE.TorusGeometry(1.66, .06, 12, 80, Math.PI), gold); archTrim.position.set(0, 1.8, .05); scene.add(archTrim);
+  [-1.66, 1.66].forEach((x) => { const p = new THREE.Mesh(new THREE.BoxGeometry(.12, 3.6, .12), gold); p.position.set(x, 0, .05); scene.add(p); });
+  const archTex = latticeTextures(512, 256, 86);
+  const archFill = new THREE.Mesh(new THREE.CircleGeometry(1.6, 48, 0, Math.PI), new THREE.MeshStandardMaterial({ map: archTex.map, emissive: 0xffffff, emissiveMap: archTex.glow, emissiveIntensity: .2, roughness: .6 }));
+  archFill.position.set(0, 1.8, .01); scene.add(archFill);
+  const knobGeo = new THREE.SphereGeometry(.07, 16, 12);
+  [doorL, doorR].forEach((d) => { const k = new THREE.Mesh(knobGeo, gold); k.position.set(.62, 0, .08); d.add(k); });
+  const lampL = new THREE.PointLight(0xffb56a, .9, 6); lampL.position.set(-2.3, 1.2, 1); scene.add(lampL);
+  const lampR = lampL.clone(); lampR.position.x = 2.3; scene.add(lampR);
+  const sconceTex = radialTex([[0, "rgba(255,220,160,1)"], [.3, "rgba(255,170,80,.6)"], [1, "rgba(255,140,60,0)"]]);
+  [-2.3, 2.3].forEach((x) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sconceTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); s.position.set(x, 1.2, .3); s.scale.setScalar(.9); scene.add(s); });
+
+  const behind = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 3.6), new THREE.MeshBasicMaterial({ color: 0xb87a3a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  behind.position.set(0, 0, -.35); scene.add(behind);
+  const warm = new THREE.PointLight(0xffc98a, 0, 12); warm.position.set(0, .5, -1); scene.add(warm);
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: 0x0b2826, roughness: .75, metalness: .1 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -1.8; scene.add(floor);
+
+  // ---------- chapter 2: three candles in the courtyard ----------
+  const flameTex = (() => {
+    const [c, g] = cvs(64, 128);
+    const r = g.createRadialGradient(32, 84, 2, 32, 76, 40);
+    r.addColorStop(0, "rgba(255,255,240,1)"); r.addColorStop(.25, "rgba(255,214,120,.95)"); r.addColorStop(.6, "rgba(255,140,40,.45)"); r.addColorStop(1, "rgba(255,90,20,0)");
+    g.fillStyle = r; g.beginPath(); g.moveTo(32, 6); g.bezierCurveTo(50, 50, 58, 80, 32, 120); g.bezierCurveTo(6, 80, 14, 50, 32, 6); g.fill();
+    return new THREE.CanvasTexture(c);
+  })();
+  const haloTex = radialTex([[0, "rgba(255,200,120,.55)"], [1, "rgba(255,160,80,0)"]]);
+  const waxMat = new THREE.MeshStandardMaterial({ color: 0xf3e6cf, roughness: .6, emissive: 0x2a1a08, emissiveIntensity: .3 });
+  const candleZ = -12;
+  const candleSpots = [[-1.05, .55, candleZ + .6], [0, .95, candleZ], [1.05, .7, candleZ + .6]];
+  const candles = candleSpots.map(([x, hgt, z], i) => {
+    const grp = new THREE.Group(); grp.position.set(x, -1.8, z);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(.15, .17, hgt, 24), waxMat); body.position.y = hgt / 2; grp.add(body);
+    const holder = new THREE.Mesh(new THREE.CylinderGeometry(.26, .3, .08, 32), gold); holder.position.y = .04; grp.add(holder);
+    const wick = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, .07, 6), new THREE.MeshBasicMaterial({ color: 0x1a1208 })); wick.position.y = hgt + .035; grp.add(wick);
+    const flame = new THREE.Sprite(new THREE.SpriteMaterial({ map: flameTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    flame.position.y = hgt + .16; flame.scale.set(0, 0, 1); grp.add(flame);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 }));
+    halo.position.y = hgt + .15; halo.scale.setScalar(1.6); grp.add(halo);
+    const light = new THREE.PointLight(0xffa955, 0, 5); light.position.y = hgt + .25; grp.add(light);
+    const hit = new THREE.Mesh(new THREE.CylinderGeometry(.5, .5, hgt + 1, 8), new THREE.MeshBasicMaterial({ visible: false })); hit.position.y = (hgt + 1) / 2; grp.add(hit);
+    hit.userData.index = i;
+    scene.add(grp);
+    return { grp, flame, halo, light, hit, hgt, lit: false };
+  });
+
+  // ---------- chapter 3: the rings, up among the stars ----------
+  const ringY = 7.2, ringZ = -12;
+  const rings = new THREE.Group(); rings.position.set(0, ringY, ringZ); scene.add(rings);
+  const goldRing = new THREE.Mesh(new THREE.TorusGeometry(1, .09, 48, 200), new THREE.MeshStandardMaterial({ color: 0xeac57c, metalness: 1, roughness: .18, envMap }));
+  goldRing.position.x = -.55; rings.add(goldRing);
+  const stone = new THREE.Mesh(new THREE.OctahedronGeometry(.17, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: .1, roughness: .02, flatShading: true, envMap, envMapIntensity: 3, emissive: 0x99aabb, emissiveIntensity: .4 }));
+  stone.scale.set(1, 1.25, 1); stone.position.y = 1.22; goldRing.add(stone);
+  const roseRing = new THREE.Mesh(new THREE.TorusGeometry(.92, .08, 48, 200), new THREE.MeshStandardMaterial({ color: 0xeeb3a0, metalness: 1, roughness: .2, envMap }));
+  const roseHome = new THREE.Vector3(1.3, -1.25, .3), dock = new THREE.Vector3(.55, 0, 0);
+  roseRing.position.copy(roseHome); roseRing.rotation.set(.4, .7, 0); rings.add(roseRing);
+  const ringLight = new THREE.PointLight(0xfff0d0, 1.2, 10); ringLight.position.set(0, 1.5, 3); rings.add(ringLight);
+
+  const sky = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(Array.from({ length: 1500 }, (_, i) => i % 3 === 0 ? (Math.random() - .5) * 60 : i % 3 === 1 ? 4 + Math.random() * 24 : -30 - Math.random() * 10), 3)),
+    new THREE.PointsMaterial({ size: .09, map: radialTex([[0, "rgba(255,255,255,1)"], [1, "rgba(255,255,255,0)"]]), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xdfeaff, fog: false }));
+  scene.add(sky);
+
+  // ---------- ambient embers ----------
+  const EN = 380, ep = new Float32Array(EN * 3), ev = new Float32Array(EN);
+  for (let i = 0; i < EN; i++) { ep[i * 3] = (Math.random() - .5) * 12; ep[i * 3 + 1] = -1.8 + Math.random() * 12; ep[i * 3 + 2] = -16 + Math.random() * 18; ev[i] = .1 + Math.random() * .3; }
+  const embers = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(ep, 3)),
+    new THREE.PointsMaterial({ size: .05, map: radialTex([[0, "rgba(255,230,170,1)"], [1, "rgba(255,180,90,0)"]]), color: 0xffd28a, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scene.add(embers);
+
+  // ---------- sparks (used for the ring lock and the RSVP) ----------
+  const SN = 420, sp = new Float32Array(SN * 3), sv = new Float32Array(SN * 3);
+  const sparks = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(sp, 3)),
+    new THREE.PointsMaterial({ size: .1, map: radialTex([[0, "rgba(255,250,230,1)"], [.4, "rgba(255,210,140,.6)"], [1, "rgba(255,180,90,0)"]]), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scene.add(sparks);
+  function burst(at, power = 1) {
+    for (let i = 0; i < SN; i++) {
+      sp[i * 3] = at.x; sp[i * 3 + 1] = at.y; sp[i * 3 + 2] = at.z;
+      const th = Math.random() * TAU, ph = Math.acos(2 * Math.random() - 1), s = (1 + Math.random() * 3.5) * power;
+      sv[i * 3] = Math.sin(ph) * Math.cos(th) * s; sv[i * 3 + 1] = Math.sin(ph) * Math.sin(th) * s; sv[i * 3 + 2] = Math.cos(ph) * s;
+    }
+    sparks.geometry.attributes.position.needsUpdate = true;
+    gsap.fromTo(sparks.material, { opacity: 1 }, { opacity: 0, duration: 2.4, ease: "power2.in" });
+  }
+
+  // ---------- chapter 4: petals ----------
+  const petalTex = (() => {
+    const [c, g] = cvs(64, 96), r = g.createRadialGradient(32, 60, 4, 32, 48, 44);
+    r.addColorStop(0, "#f3c6bf"); r.addColorStop(.55, "#e2948e"); r.addColorStop(1, "#b9666a");
+    g.fillStyle = r; g.beginPath(); g.moveTo(32, 4); g.bezierCurveTo(64, 20, 60, 80, 32, 92); g.bezierCurveTo(4, 80, 0, 20, 32, 4); g.fill();
+    return new THREE.CanvasTexture(c);
+  })();
+  const PN = 240;
+  const petals = new THREE.InstancedMesh(new THREE.PlaneGeometry(.13, .19), new THREE.MeshBasicMaterial({ map: petalTex, transparent: true, side: THREE.DoubleSide, depthWrite: false, alphaTest: .05 }), PN);
+  petals.frustumCulled = false; scene.add(petals);
+  const P = Array.from({ length: PN }, () => ({ p: new THREE.Vector3(0, -99, 0), v: new THREE.Vector3(), r: new THREE.Euler(), s: new THREE.Vector3(Math.random() * 2, Math.random() * 2, Math.random() * 2), active: false }));
+  let petalsOn = false;
+  const dummy = new THREE.Object3D();
+  function spawnPetal(o, anywhere) {
+    const z = -11.5 + Math.random() * 4.5, dist = camera.position.z - z, hh = dist * tanH, hw = hh * camera.aspect;
+    o.p.set((Math.random() - .5) * 2 * hw, camera.position.y + (anywhere ? (Math.random() * 2 - 1) * hh : hh + .3 + Math.random()), z);
+    o.v.set((Math.random() - .5) * .2, -(.35 + Math.random() * .45), 0); o.active = true;
+  }
+
+  // ---------- post: bloom ----------
+  const composer = new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene, camera));
+  const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .5, .45, .72);
+  composer.addPass(bloom);
+
+  // ---------- layout ----------
+  let ringFit = 1;
+  function resize() {
+    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight, false); composer.setSize(innerWidth, innerHeight);
+    if (chapter === 1) camera.position.z = doorZ();
+    const hw = 8 * tanH * camera.aspect;
+    ringFit = Math.min(1, hw * .86 / 1.85);
+    rings.scale.setScalar(ringFit);
+  }
+  resize(); addEventListener("resize", resize);
+
+  // ---------- interaction ----------
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  const ringPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -ringZ);
+  const tmp = new THREE.Vector3(), grabOffset = new THREE.Vector3(), roseTarget = roseHome.clone();
+  const pointer = { x: 0, y: 0, active: false };
+  let roseFree = true; const roseIdle = new THREE.Vector3();
+  const door = { open: 0 };
+  let drag = null;
+  const setRay = (e) => { ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); };
+  function applyDoor() {
+    const a = door.open * 1.95;
+    pivotL.rotation.y = -a; pivotR.rotation.y = a;
+    behind.material.opacity = Math.min(.8, door.open * 1.3);
+    warm.intensity = door.open * 2;
+  }
+  const breathe = gsap.to(door, { open: .045, duration: 1.4, yoyo: true, repeat: -1, ease: "sine.inOut", onUpdate: applyDoor });
+
+  canvas.addEventListener("pointerdown", (e) => {
+    setRay(e);
+    if (chapter === 1) { breathe.pause(); drag = { kind: "door", x0: e.clientX, o0: door.open }; }
+    else if (chapter === 2) {
+      const hit = ray.intersectObjects(candles.map((c) => c.hit))[0];
+      if (hit) lightCandle(hit.object.userData.index);
+    } else if (chapter === 3) {
+      if (ray.ray.intersectPlane(ringPlane, tmp)) { rings.worldToLocal(tmp); grabOffset.copy(roseRing.position).sub(tmp); drag = { kind: "ring" }; roseFree = false; roseTarget.copy(roseRing.position); gsap.killTweensOf(roseRing.position); }
+    }
+    canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+  });
+  addEventListener("pointermove", (e) => {
+    pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true;
+    if (!drag) return;
+    if (drag.kind === "door") { door.open = Math.max(0, Math.min(1, drag.o0 + Math.abs(e.clientX - drag.x0) / (innerWidth * .55))); applyDoor(); }
+    if (drag.kind === "ring") { setRay(e); if (ray.ray.intersectPlane(ringPlane, tmp)) { rings.worldToLocal(tmp); roseTarget.copy(tmp).add(grabOffset); roseTarget.z = .3; } }
+  });
+  addEventListener("pointerup", () => {
+    if (!drag) return;
+    const d = drag; drag = null;
+    if (d.kind === "door") { if (door.open > .28) openDoor(); else { gsap.to(door, { open: 0, duration: .9, ease: "elastic.out(1, .5)", onUpdate: applyDoor, onComplete: () => breathe.restart() }); } }
+    if (d.kind === "ring") { if (roseRing.position.distanceTo(dock) < .7) lockRings(); else roseFree = true; }
+  });
+
+  // ---------- chapter flow ----------
+  function openDoor() {
+    if (chapter !== 1) return; chapter = 1.5; breathe.kill();
+    gsap.to("#p1", { opacity: 0, y: 12, duration: .5, onComplete: () => ($("#p1").hidden = true) });
+    gsap.timeline()
+      .to(door, { open: 1, duration: 1.1 * K, ease: "power2.out", onUpdate: applyDoor })
+      .to(bloom, { strength: .95, duration: .7 * K }, 0)
+      .to(camera.position, { z: -1.2, y: .1, duration: 2.6 * K, ease: "power2.inOut" }, .5 * K)
+      .to(look, { y: -.4, z: -12, duration: 2.6 * K, ease: "power2.inOut" }, .5 * K)
+      .to(behind.material, { opacity: 0, duration: .8 }, .9 * K)
+      .to(bloom, { strength: .5, duration: 1.2 }, 1.8 * K)
+      .to(camera.position, { z: -4.2, y: .2, duration: 1.4 * K, ease: "power2.out" }, 3 * K)
+      .add(() => { behind.visible = false; chapter = 2; $("#p2").hidden = false; gsap.from("#p2", { opacity: 0, y: 12, duration: .6 }); }, 3.2 * K);
+  }
+  const labelInfo = [
+    ["The date", `${fmt({ weekday: "long" })}, ${fmt({ day: "numeric", month: "long" })}`],
+    ["The time", CONFIG.timeShort],
+    ["The place", CONFIG.venue]
+  ];
+  const labels = labelInfo.map(([s, t]) => { const d = document.createElement("div"); d.className = "label"; d.innerHTML = `<small></small><span></span>`; d.querySelector("small").textContent = s; d.querySelector("span").textContent = t; $("#labels").appendChild(d); gsap.set(d, { xPercent: -50, yPercent: -100 }); return d; });
+  function lightCandle(i) {
+    const c = candles[i]; if (c.lit) return; c.lit = true;
+    gsap.timeline()
+      .to(c.flame.scale, { x: .26, y: .52, duration: .5, ease: "back.out(3)" })
+      .to(c.halo.material, { opacity: 1, duration: .6 }, 0)
+      .to(c.light, { intensity: 1.3, duration: .6 }, 0)
+      .to(labels[i], { opacity: 1, duration: .6 }, .2)
+      .fromTo(labels[i], { y: 10 }, { y: 0, duration: .6, ease: "power2.out" }, .2);
+    const n = candles.filter((x) => x.lit).length;
+    $("#litCount").textContent = `${n} / 3`;
+    if (n === 3) gsap.delayedCall(1.4 * K, toRings);
+  }
+  function toRings() {
+    if (chapter !== 2) return; chapter = 2.5;
+    gsap.to("#p2", { opacity: 0, duration: .4, onComplete: () => ($("#p2").hidden = true) });
+    gsap.to(labels, { opacity: 0, duration: .6, delay: .5 });
+    gsap.timeline()
+      .to(camera.position, { y: ringY, z: ringZ + 8, duration: 2.4 * K, ease: "power2.inOut" })
+      .to(look, { y: ringY, z: ringZ, duration: 2.4 * K, ease: "power2.inOut" }, 0)
+      .add(() => { chapter = 3; $("#p3").hidden = false; gsap.from("#p3", { opacity: 0, y: 12, duration: .6 }); }, 2.2 * K);
+  }
+  function lockRings() {
+    if (chapter !== 3) return; chapter = 3.5;
+    gsap.to("#p3", { opacity: 0, duration: .4, onComplete: () => ($("#p3").hidden = true) });
+    const tl = gsap.timeline();
+    tl.to(roseRing.position, { x: dock.x, y: dock.y, z: dock.z, duration: .7 * K, ease: "power3.inOut" })
+      .to(roseRing.rotation, { x: Math.PI / 2, y: 0, z: 0, duration: .7 * K, ease: "power3.inOut" }, 0)
+      .add(() => { burst(rings.localToWorld(new THREE.Vector3(0, 0, 0)), 1); }, .65 * K)
+      .to(bloom, { strength: 2.4, duration: .25, yoyo: true, repeat: 1 }, .65 * K)
+      .to(rings.rotation, { y: TAU, duration: 1.8 * K, ease: "power2.inOut" }, .8 * K)
+      .to(camera.position, { y: ringY - 1.7, duration: 1.8 * K, ease: "power2.inOut" }, 1.2 * K)
+      .to(look, { y: ringY - 1.7, duration: 1.8 * K, ease: "power2.inOut" }, 1.2 * K)
+      .add(() => { rings.rotation.y = 0; chapter = 4; petalsOn = true; P.forEach((o, i) => i < PN * .6 && spawnPetal(o, true)); showInvitation(); }, 1.6 * K);
+  }
+  function skipAll() {
+    if (chapter >= 3.5) return;
+    gsap.killTweensOf([door, camera.position, look, bloom]);
+    door.open = 1; applyDoor(); behind.visible = false;
+    candles.forEach((c) => { c.lit = true; c.flame.scale.set(.26, .52, 1); c.halo.material.opacity = 1; c.light.intensity = 1.3; });
+    ["#p1", "#p2", "#p3"].forEach((s) => ($(s).hidden = true));
+    gsap.set(labels, { opacity: 0 });
+    camera.position.set(0, ringY, ringZ + 8); look.set(0, ringY, ringZ);
+    chapter = 3; lockRings();
+  }
+  $("#openBtn").addEventListener("click", openDoor);
+  $("#lightBtn").addEventListener("click", () => candles.forEach((c, i) => gsap.delayedCall(i * .45, () => lightCandle(i))));
+  $("#joinBtn").addEventListener("click", () => { roseFree = false; roseTarget.copy(dock); gsap.delayedCall(.5, lockRings); });
+  $("#skipBtn").addEventListener("click", skipAll);
+
+  // ---------- frame loop ----------
+  const ptrWorld = new THREE.Vector3(), push = new THREE.Vector3();
+  let t = 0;
+  gsap.ticker.add((time, dms) => {
+    const dt = Math.min(dms / 1000, .05); t += dt;
+
+    for (let i = 0; i < EN; i++) { ep[i * 3 + 1] += ev[i] * dt; ep[i * 3] += Math.sin(t * .7 + i) * .002; if (ep[i * 3 + 1] > 11) ep[i * 3 + 1] = -1.8; }
+    embers.geometry.attributes.position.needsUpdate = true;
+
+    if (sparks.material.opacity > .01) {
+      for (let i = 0; i < SN * 3; i++) { sp[i] += sv[i] * dt; sv[i] *= .962; }
+      for (let i = 0; i < SN; i++) sv[i * 3 + 1] -= .6 * dt;
+      sparks.geometry.attributes.position.needsUpdate = true;
+    }
+
+    candles.forEach((c, i) => {
+      if (!c.lit) return;
+      const f = 1 + Math.sin(t * 13 + i * 2) * .06 + Math.sin(t * 7.3 + i) * .05;
+      c.flame.scale.y = .52 * f; c.light.intensity = 1.3 * f; c.flame.position.x = Math.sin(t * 5 + i) * .01;
+    });
+    if (chapter >= 2) labels.forEach((el, i) => {
+      const c = candles[i];
+      tmp.set(0, c.hgt + .55, 0); c.grp.localToWorld(tmp); tmp.project(camera);
+      const half = el.offsetWidth / 2 + 10; el.style.left = Math.min(innerWidth - half, Math.max(half, (tmp.x + 1) / 2 * innerWidth)) + "px"; el.style.top = ((1 - tmp.y) / 2 * innerHeight) + "px";
+    });
+
+    if (chapter < 3.5) {
+      goldRing.rotation.y = Math.sin(t * .8) * .25;
+      if (chapter === 3 || chapter === 2.5) {
+        const goal = roseFree ? roseIdle.copy(roseHome).setY(roseHome.y + Math.sin(t * 1.4) * .08) : roseTarget;
+        roseRing.position.lerp(goal, .16);
+        const near = 1 - Math.min(1, roseRing.position.distanceTo(dock) / 2.2);
+        roseRing.rotation.x += ((.4 + near * (Math.PI / 2 - .4)) - roseRing.rotation.x) * .12;
+        roseRing.rotation.y += ((.7 * (1 - near)) - roseRing.rotation.y) * .12;
+        if (drag && drag.kind === "ring" && roseRing.position.distanceTo(dock) < .35) { drag = null; lockRings(); }
+      }
+    } else if (chapter >= 4) {
+      const sc = document.scrollingElement, max = Math.max(1, sc.scrollHeight - innerHeight), p = sc.scrollTop / max;
+      rings.rotation.y += ((p * TAU * 1.5 + Math.sin(t * .5) * .35) - rings.rotation.y) * .08;
+      rings.rotation.x = Math.sin(t * .4) * .12;
+      canvas.style.opacity = String(1 - Math.min(.5, sc.scrollTop / innerHeight * .6));
+    }
+
+    if (petalsOn) {
+      let pr = null;
+      if (pointer.active) { ndc.set(pointer.x / innerWidth * 2 - 1, -(pointer.y / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); pr = ray.ray; }
+      P.forEach((o, i) => {
+        if (!o.active) { if (Math.random() < .02) spawnPetal(o, false); else { dummy.position.set(0, -99, 0); dummy.updateMatrix(); petals.setMatrixAt(i, dummy.matrix); return; } }
+        o.v.x += Math.sin(t * .9 + i) * .15 * dt;
+        if (pr) {
+          const k = (o.p.z - pr.origin.z) / pr.direction.z;
+          ptrWorld.copy(pr.direction).multiplyScalar(k).add(pr.origin);
+          const dx = o.p.x - ptrWorld.x, dy = o.p.y - ptrWorld.y, d = Math.hypot(dx, dy);
+          if (d < .9) { push.set(dx, dy, 0).normalize().multiplyScalar((.9 - d) * 9 * dt); o.v.add(push); }
+        }
+        o.v.y += (-(.45) - o.v.y) * .8 * dt; o.v.x *= .985;
+        o.p.addScaledVector(o.v, dt);
+        o.r.set(o.r.x + o.s.x * dt, o.r.y + o.s.y * dt, o.r.z + o.s.z * dt * .5);
+        if (o.p.y < camera.position.y - (camera.position.z - o.p.z) * tanH - .5) spawnPetal(o, false);
+        dummy.position.copy(o.p); dummy.rotation.copy(o.r); dummy.updateMatrix(); petals.setMatrixAt(i, dummy.matrix);
+      });
+      petals.instanceMatrix.needsUpdate = true;
+    }
+
+    camera.lookAt(look);
+    if (chapter === 1 && !drag) { camera.position.x += ((pointer.active ? (pointer.x / innerWidth - .5) * .5 : 0) - camera.position.x) * .03; }
+    composer.render();
+  });
+
+  return {
+    celebrate() {
+      const c = new THREE.Vector3(0, camera.position.y - .5, -8);
+      burst(c, 1.3);
+      P.forEach((o) => { o.active = true; o.p.set(c.x + (Math.random() - .5) * .5, c.y + (Math.random() - .5) * .5, -8 + (Math.random() - .5) * 2); const a = Math.random() * TAU, s = 1.5 + Math.random() * 3; o.v.set(Math.cos(a) * s, Math.sin(a) * s + 1.5, 0); });
+      gsap.to(bloom, { strength: 1.8, duration: .3, yoyo: true, repeat: 1 });
+    }
+  };
+}
+
+function showInvitation() {
+  $("#content").hidden = false; document.body.classList.add("open"); scrollTo(0, 0);
+  gsap.to("#skipBtn", { opacity: 0, duration: .4, onComplete: () => ($("#skipBtn").hidden = true) });
+  gsap.from(".hero .r", { y: 30, opacity: 0, duration: 1 * K, stagger: .14 * K, ease: "power3.out" });
+  gsap.from(".names > span", { scale: .6, opacity: 0, duration: 1.2 * K, stagger: .25 * K, ease: "back.out(1.6)", delay: .2 });
+}
+</script>
+</body>
+</html>
