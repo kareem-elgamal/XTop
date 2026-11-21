@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Marcellus&family=Noto+Naskh+Arabic:wght@400;500&family=Jost:wght@300;400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Marcellus&family=Noto+Naskh+Arabic:wght@400;500&family=Jost:wght@300;400&display=swap">
 <style>
 /* Layout: stone-paper ground; ink drops fall and bloom, the names write themselves in Ruqaa
    calligraphy with English beneath, then bilingual cards follow (Arabic first, English toggle). One light look. */
@@ -23,6 +23,8 @@
 }
 :root[lang="en"] { --f-display: var(--f-latin); --f-text: var(--f-body); }
 [hidden] { display: none !important; }
+.ayah { font: 400 1.15rem/2.05 "Amiri", "Noto Naskh Arabic", "Geeza Pro", serif; color: var(--fg); margin: 0 auto 1.6rem; max-width: 26rem; text-align: center; text-wrap: balance; }
+.ayah cite { display: block; font-style: normal; font-size: .8rem; opacity: .7; margin-top: .2rem; }
 html { background: var(--bg); }
 body { background: var(--bg); color: var(--fg); font: 400 16px/1.7 var(--f-text); }
 
@@ -88,6 +90,7 @@ footer p { margin: .4rem 0 0; letter-spacing: .3em; font: .72rem var(--f-body); 
     <g id="dust" fill="url(#leaf)"></g>
   </svg>
 
+      <p class="ayah" dir="rtl" lang="ar"><span data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</span><cite>سورة الروم · ٢١</cite></p>
   <p class="invite-ar h" dir="rtl">بكل الحب ندعوكم لحضور زفاف</p>
   <h1 class="cal" id="cal" dir="rtl">كريم و إسراء</h1>
   <p class="latin h" lang="en"><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span></p>
@@ -137,11 +140,12 @@ footer p { margin: .4rem 0 0; letter-spacing: .3em; font: .72rem var(--f-body); 
 /* ===== EDIT YOUR DETAILS HERE (Arabic + English) ===== */
 const CONFIG = {
   name1: "Kareem", name2: "Esraa",
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // Quran 30:21; set to "" to hide
   name1Ar: "كريم", name2Ar: "إسراء",
   date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
-  venue: { ar: "قاعة الحديقة", en: "The Garden Hall" },
-  address: { ar: "كورنيش النيل، المعادي، القاهرة", en: "Nile Corniche, Maadi, Cairo" },
-  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
+  venue: { ar: "وايت هاوس", en: "White House Venue" },
+  address: { ar: "المنصورة، الدقهلية", en: "Mansoura, Dakahlia" },
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansoura",
   rsvpBy: { ar: "٥ مارس ٢٠٢٧", en: "5 March 2027" },
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [
@@ -173,6 +177,7 @@ let lang = "ar";
 try { lang = localStorage.getItem("inviteLang") || "ar"; } catch (e) {}
 
 document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+document.querySelectorAll(".ayah").forEach((el) => { el.hidden = !CONFIG.verse; });
 $("#cal").textContent = `${CONFIG.name1Ar} و ${CONFIG.name2Ar}`;
 $("#mono").textContent = `${CONFIG.name1Ar[0]} و ${CONFIG.name2Ar[0]}`;
 $("#dateAr").textContent = fmt("ar-EG", { weekday: "long", day: "numeric", month: "long", year: "numeric" });

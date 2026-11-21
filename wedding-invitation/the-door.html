@@ -21,6 +21,8 @@
   color-scheme: dark;
 }
 [hidden] { display: none !important; }
+.ayah { font: 400 1.15rem/2.05 "Amiri", "Noto Naskh Arabic", "Geeza Pro", serif; color: var(--gold-hi); margin: 0 auto 1.6rem; max-width: 26rem; text-align: center; text-wrap: balance; }
+.ayah cite { display: block; font-style: normal; font-size: .8rem; opacity: .7; margin-top: .2rem; }
 html { background: var(--bg); }
 body { background: var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); overflow: hidden; }
 body.open { overflow-y: auto; }
@@ -89,7 +91,7 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
   <button class="skip" id="skipBtn" type="button">Skip</button>
 
   <div class="panel" id="p1">
-    <p class="verse" dir="rtl" lang="ar" data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا</p>
+    <p class="verse" dir="rtl" lang="ar" data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</p>
     <p class="who"><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span></p>
     <p class="hint"><svg class="hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"></path></svg>Swipe to open the door</p>
     <button class="alt" id="openBtn" type="button">or tap here</button>
@@ -110,6 +112,7 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 <main class="content" id="content" hidden>
   <section class="hero">
     <div class="wrap">
+      <p class="ayah" dir="rtl" lang="ar"><span data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</span><cite>سورة الروم · ٢١</cite></p>
       <p class="eyebrow r">Together with their families</p>
       <h1 class="names r"><span data-k="name1">Kareem</span><span class="amp">&amp;</span><span data-k="name2">Esraa</span></h1>
       <p class="lede r">invite you to celebrate their wedding</p>
@@ -129,8 +132,8 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
   <section class="s"><div class="wrap"><div class="card">
     <p class="eyebrow">The celebration</p>
     <h2>Where &amp; when</h2>
-    <p class="venue-name" data-k="venue">The Garden Hall</p>
-    <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+    <p class="venue-name" data-k="venue">White House Venue</p>
+    <p class="muted" data-k="address" style="margin: .3rem 0 0">Mansoura, Dakahlia</p>
     <ul class="program" id="program"></ul>
     <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
   </div></div></section>
@@ -164,11 +167,11 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 /* ===== EDIT YOUR DETAILS HERE ===== */
 const CONFIG = {
   name1: "Kareem", name2: "Esraa",
-  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا",   // set to "" to hide
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // set to "" to hide
   date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
   timeText: "at seven in the evening", timeShort: "7:00 PM",
-  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo",
-  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
+  venue: "White House Venue", address: "Mansoura, Dakahlia",
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansoura",
   rsvpBy: "5 March 2027",
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
@@ -179,6 +182,7 @@ const $ = (s) => document.querySelector(s);
 const when = new Date(CONFIG.date);
 const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
 document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+document.querySelectorAll(".ayah").forEach((el) => { el.hidden = !CONFIG.verse; });
 if (!CONFIG.verse) $(".verse").hidden = true;
 $("#dWeekday").textContent = fmt({ weekday: "long" });
 $("#dDay").textContent = fmt({ day: "numeric" });

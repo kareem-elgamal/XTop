@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Italiana&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Italiana&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap">
 <style>
 /* Layout: a fixed WebGL night sky with two gold rings; one tap joins them, then a single
    narrow column of invitation cards scrolls over the scene. Deliberately one dark look. */
@@ -25,6 +25,8 @@
   color-scheme: dark;
 }
 [hidden] { display: none !important; }
+.ayah { font: 400 1.15rem/2.05 "Amiri", "Noto Naskh Arabic", "Geeza Pro", serif; color: var(--gold-hi); margin: 0 auto 1.6rem; max-width: 26rem; text-align: center; text-wrap: balance; }
+.ayah cite { display: block; font-style: normal; font-size: .8rem; opacity: .7; margin-top: .2rem; }
 html { background: var(--night); }
 body {
   background: radial-gradient(120% 80% at 50% 20%, var(--night-2) 0%, var(--night) 70%) fixed, var(--night);
@@ -169,6 +171,7 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 <main class="content" id="content" hidden>
   <section class="hero">
     <div class="wrap">
+      <p class="ayah" dir="rtl" lang="ar"><span data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</span><cite>سورة الروم · ٢١</cite></p>
       <p class="eyebrow">Together with their families</p>
       <h1 class="names" id="names">
         <span class="word" data-k="name1">Kareem</span>
@@ -207,8 +210,8 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
       <div class="card fade">
         <p class="eyebrow">The celebration</p>
         <h2>Where &amp; when</h2>
-        <p class="venue-name" data-k="venue">The Garden Hall</p>
-        <p class="venue-addr" data-k="address">Nile Corniche, Maadi, Cairo</p>
+        <p class="venue-name" data-k="venue">White House Venue</p>
+        <p class="venue-addr" data-k="address">Mansoura, Dakahlia</p>
         <ul class="program" id="program"></ul>
         <div class="actions">
           <a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a>
@@ -257,13 +260,14 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 const CONFIG = {
   name1: "Kareem",
   name2: "Esraa",
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // Quran 30:21; set to "" to hide
   date: "2027-03-19T19:00:00+02:00",   // ceremony start, with your UTC offset
   timeZone: "Africa/Cairo",
   timeText: "at seven in the evening",
   durationHours: 5,
-  venue: "The Garden Hall",
-  address: "Nile Corniche, Maadi, Cairo",
-  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",    // what Google Maps should search for
+  venue: "White House Venue",
+  address: "Mansoura, Dakahlia",
+  mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansoura",    // what Google Maps should search for
   rsvpBy: "5 March 2027",
   whatsapp: "",                         // e.g. "201001234567" (country code, no +). Empty = thank-you only
   program: [
@@ -276,6 +280,7 @@ const CONFIG = {
 /* ---------- Fill the page from CONFIG ---------- */
 const $ = (s) => document.querySelector(s);
 document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+document.querySelectorAll(".ayah").forEach((el) => { el.hidden = !CONFIG.verse; });
 const when = new Date(CONFIG.date);
 const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
 $("#dWeekday").textContent = fmt({ weekday: "long" });

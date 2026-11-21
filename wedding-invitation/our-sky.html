@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&family=IBM+Plex+Mono:wght@400&family=Jost:wght@300;400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@1,400;1,500&family=IBM+Plex+Mono:wght@400&family=Jost:wght@300;400&display=swap">
 <style>
 /* Layout: a twinkling night behind a round star chart; the guest joins ten stars into a heart,
    the date appears, and the invitation cards follow in one narrow column. One dark look. */
@@ -20,6 +20,8 @@
   color-scheme: dark;
 }
 [hidden] { display: none !important; }
+.ayah { font: 400 1.15rem/2.05 "Amiri", "Noto Naskh Arabic", "Geeza Pro", serif; color: var(--accent); margin: 0 auto 1.6rem; max-width: 26rem; text-align: center; text-wrap: balance; }
+.ayah cite { display: block; font-style: normal; font-size: .8rem; opacity: .7; margin-top: .2rem; }
 html { background: var(--bg); }
 body { background: radial-gradient(90% 60% at 50% 30%, var(--bg-2) 0%, var(--bg) 75%) fixed, var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); overflow: hidden; }
 body.open { overflow-y: auto; }
@@ -90,7 +92,7 @@ footer p { margin: .6rem 0 0; font: .72rem var(--f-num); letter-spacing: .2em; }
       <circle id="pulse" r="16" fill="none" stroke="#ffffff" stroke-width="1"></circle>
       <g id="stars"></g>
     </svg>
-    <p class="coords" id="coords">30.04° N · 31.24° E · 19.03.2027 · 19:00</p>
+    <p class="coords" id="coords">31.04° N · 31.38° E · 19.03.2027 · 19:00</p>
     <h1 class="names"><span data-k="name1">Kareem</span> &amp; <span data-k="name2">Esraa</span></h1>
 
     <div class="task" id="task">
@@ -102,12 +104,13 @@ footer p { margin: .6rem 0 0; font: .72rem var(--f-num); letter-spacing: .2em; }
     <div class="reveal" id="reveal" hidden>
       <span class="eyebrow">Save the night</span>
       <span class="big-date" id="bigDate">19 · 03 · 2027</span>
-      <span class="muted" id="bigSub">The Garden Hall · 7 PM</span>
+      <span class="muted" id="bigSub">White House Venue · 7 PM</span>
       <span class="cue">Scroll</span>
     </div>
   </header>
 
   <main id="content" hidden>
+  <section class="s" style="padding-bottom: 0"><div class="wrap"><p class="ayah" dir="rtl" lang="ar"><span data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</span><cite>سورة الروم · ٢١</cite></p></div></section>
     <section class="s"><div class="wrap"><div class="card">
       <p class="eyebrow">Counting the nights</p>
       <h2>Until our day</h2>
@@ -118,8 +121,8 @@ footer p { margin: .6rem 0 0; font: .72rem var(--f-num); letter-spacing: .2em; }
     <section class="s"><div class="wrap"><div class="card">
       <p class="eyebrow">The celebration</p>
       <h2>Where &amp; when</h2>
-      <p class="venue-name" data-k="venue">The Garden Hall</p>
-      <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+      <p class="venue-name" data-k="venue">White House Venue</p>
+      <p class="muted" data-k="address" style="margin: .3rem 0 0">Mansoura, Dakahlia</p>
       <ul class="program" id="program"></ul>
       <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
     </div></div></section>
@@ -154,10 +157,11 @@ footer p { margin: .6rem 0 0; font: .72rem var(--f-num); letter-spacing: .2em; }
 /* ===== EDIT YOUR DETAILS HERE ===== */
 const CONFIG = {
   name1: "Kareem", name2: "Esraa",
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // Quran 30:21; set to "" to hide
   date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
   timeShort: "7 PM",
-  coords: "30.04° N · 31.24° E",
-  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
+  coords: "31.04° N · 31.38° E",
+  venue: "White House Venue", address: "Mansoura, Dakahlia", mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansoura",
   rsvpBy: "5 March 2027",
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
@@ -168,6 +172,7 @@ const $ = (s) => document.querySelector(s);
 const when = new Date(CONFIG.date);
 const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
 document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+document.querySelectorAll(".ayah").forEach((el) => { el.hidden = !CONFIG.verse; });
 const dShort = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/");
 $("#coords").textContent = `${CONFIG.coords} · ${dShort.join(".")} · ${fmt({ hour: "2-digit", minute: "2-digit", hour12: false })}`;
 $("#bigDate").textContent = dShort.join(" · ");

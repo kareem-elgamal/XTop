@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400&family=Space+Mono:wght@400;700&family=Jost:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:ital,opsz,wght@1,9..144,400&family=Space+Mono:wght@400;700&family=Jost:wght@300;400;500&display=swap">
 <style>
 /* Layout: one airline boarding pass centred on a pale-sky ground; drag the RSVP stub to tear it,
    a plane crosses, and the rest of the invitation unfolds as airline-styled cards. One light look. */
@@ -20,6 +20,8 @@
   color-scheme: light;
 }
 [hidden] { display: none !important; }
+.ayah { font: 400 1.15rem/2.05 "Amiri", "Noto Naskh Arabic", "Geeza Pro", serif; color: var(--fg); margin: 0 auto 1.6rem; max-width: 26rem; text-align: center; text-wrap: balance; }
+.ayah cite { display: block; font-style: normal; font-size: .8rem; opacity: .7; margin-top: .2rem; }
 html { background: var(--bg); }
 body { background: var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); overflow: hidden; }
 body.open { overflow-y: auto; }
@@ -100,7 +102,7 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
         <div class="fld"><span>Date</span><b id="pDate">19 MAR 27</b></div>
         <div class="fld"><span>Boarding</span><b id="pTime">19:00</b></div>
         <div class="fld"><span>Seat</span><b>NEXT TO US</b></div>
-        <div class="fld full"><span>Gate</span><b id="pGate">THE GARDEN HALL, MAADI</b></div>
+        <div class="fld full"><span>Gate</span><b id="pGate">WHITE HOUSE, MANSOURA</b></div>
       </div>
     </div>
     <div class="perf" aria-hidden="true"><i></i></div>
@@ -118,6 +120,7 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 </div>
 
 <main class="content" id="content" hidden>
+  <section class="s" style="padding-bottom: 0"><div class="wrap"><p class="ayah" dir="rtl" lang="ar"><span data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</span><cite>سورة الروم · ٢١</cite></p></div></section>
   <section class="s"><div class="wrap"><div class="card">
     <p class="eyebrow">Departure in</p>
     <h2>Boarding soon</h2>
@@ -128,8 +131,8 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
   <section class="s"><div class="wrap"><div class="card">
     <p class="eyebrow">Gate information</p>
     <h2>Where we take off</h2>
-    <p class="venue-name" data-k="venue">The Garden Hall</p>
-    <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+    <p class="venue-name" data-k="venue">White House Venue</p>
+    <p class="muted" data-k="address" style="margin: .3rem 0 0">Mansoura, Dakahlia</p>
     <ul class="program" id="program"></ul>
     <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
   </div></div></section>
@@ -158,9 +161,10 @@ footer p { margin: .6rem 0 0; letter-spacing: .3em; font-size: .72rem; }
 /* ===== EDIT YOUR DETAILS HERE ===== */
 const CONFIG = {
   name1: "Kareem", name2: "Esraa",
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // Quran 30:21; set to "" to hide
   date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
-  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
-  gateShort: "The Garden Hall, Maadi",
+  venue: "White House Venue", address: "Mansoura, Dakahlia", mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansoura",
+  gateShort: "White House, Mansoura",
   rsvpBy: "5 March 2027",
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
@@ -171,6 +175,7 @@ const $ = (s) => document.querySelector(s);
 const when = new Date(CONFIG.date);
 const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
 document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+document.querySelectorAll(".ayah").forEach((el) => { el.hidden = !CONFIG.verse; });
 const initials = CONFIG.name1[0].toUpperCase() + CONFIG.name2[0].toUpperCase();
 $("#airline").textContent = initials + " AIRWAYS";
 $("#flight").textContent = "FLIGHT " + initials + fmt({ day: "2-digit" }) + fmt({ month: "2-digit" });

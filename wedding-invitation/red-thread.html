@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,400;1,6..96,500&family=Jost:wght@300;400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Bodoni+Moda:ital,opsz,wght@1,6..96,400;1,6..96,500&family=Jost:wght@300;400&display=swap">
 <style>
 /* Layout: a long white page; one red thread starts at his name, ties a knot at the date,
    weaves behind every card as you scroll, and ends at her name in the footer. One light look. */
@@ -19,6 +19,8 @@
   color-scheme: light;
 }
 [hidden] { display: none !important; }
+.ayah { font: 400 1.15rem/2.05 "Amiri", "Noto Naskh Arabic", "Geeza Pro", serif; color: var(--fg); margin: 0 auto 1.6rem; max-width: 26rem; text-align: center; text-wrap: balance; }
+.ayah cite { display: block; font-style: normal; font-size: .8rem; opacity: .7; margin-top: .2rem; }
 html { background: var(--bg); }
 body { background: var(--bg); color: var(--fg); font: 300 16px/1.6 var(--f-body); }
 #page { position: relative; overflow: hidden; }
@@ -68,6 +70,7 @@ footer .meta { margin-top: 1.4rem; font-size: .72rem; letter-spacing: .3em; colo
 
   <div class="layer">
     <header class="hero wrap">
+      <p class="ayah" dir="rtl" lang="ar"><span data-k="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</span><cite>سورة الروم · ٢١</cite></p>
       <p class="label r">From his side</p>
       <h1 class="name r"><span data-k="name1">Kareem</span><span class="dot" id="a1"></span></h1>
       <div class="knot-row r">
@@ -88,8 +91,8 @@ footer .meta { margin-top: 1.4rem; font-size: .72rem; letter-spacing: .3em; colo
     <section class="s"><div class="wrap"><div class="card">
       <p class="label">The celebration</p>
       <h2>Where &amp; when</h2>
-      <p class="venue-name" data-k="venue">The Garden Hall</p>
-      <p class="muted" data-k="address" style="margin: .3rem 0 0">Nile Corniche, Maadi, Cairo</p>
+      <p class="venue-name" data-k="venue">White House Venue</p>
+      <p class="muted" data-k="address" style="margin: .3rem 0 0">Mansoura, Dakahlia</p>
       <ul class="program" id="program"></ul>
       <div class="actions"><a class="btn" id="mapLink" href="#" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" id="calLink" href="#" target="_blank" rel="noopener">Add to calendar</a></div>
     </div></div></section>
@@ -122,9 +125,10 @@ footer .meta { margin-top: 1.4rem; font-size: .72rem; letter-spacing: .3em; colo
 /* ===== EDIT YOUR DETAILS HERE ===== */
 const CONFIG = {
   name1: "Kareem", name2: "Esraa",
+  verse: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً",   // Quran 30:21; set to "" to hide
   date: "2027-03-19T19:00:00+02:00", timeZone: "Africa/Cairo", durationHours: 5,
   timeShort: "7 PM",
-  venue: "The Garden Hall", address: "Nile Corniche, Maadi, Cairo", mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "Maadi Corniche, Cairo",
+  venue: "White House Venue", address: "Mansoura, Dakahlia", mapUrl: "https://maps.app.goo.gl/VbhpM8e1Pi99nuis9", mapQuery: "White House Venue, Mansoura",
   rsvpBy: "5 March 2027",
   whatsapp: "",   // e.g. "201001234567"; empty = thank-you only
   program: [["7:00 PM", "Guests arrive"], ["8:00 PM", "Zaffa & ceremony"], ["9:30 PM", "Dinner & dancing"]]
@@ -135,6 +139,7 @@ const $ = (s) => document.querySelector(s);
 const when = new Date(CONFIG.date);
 const fmt = (o) => new Intl.DateTimeFormat("en-GB", { timeZone: CONFIG.timeZone, ...o }).format(when);
 document.querySelectorAll("[data-k]").forEach((el) => { el.textContent = CONFIG[el.dataset.k]; });
+document.querySelectorAll(".ayah").forEach((el) => { el.hidden = !CONFIG.verse; });
 $("#dNum").textContent = fmt({ day: "2-digit" }) + "." + fmt({ month: "2-digit" });
 $("#dSub").textContent = fmt({ year: "numeric" }) + " · " + CONFIG.timeShort;
 $("#dShort").textContent = fmt({ day: "2-digit", month: "2-digit", year: "numeric" }).split("/").join(" · ");
